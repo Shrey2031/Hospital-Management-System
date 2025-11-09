@@ -1,4 +1,8 @@
-import { useState } from 'react'
+import { useState,useContext,useEffect } from 'react'
+import React from 'react';
+import { ToastContainer} from 'react-toastify';
+import axios from 'axios';
+
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import LandingPages from './pages/LandingPages'
 
@@ -8,22 +12,37 @@ import UserLogin from './pages/auth/Login/UserLogin'
 import DoctorLogin from './pages/auth/Login/DoctorLogin'
 import FacilityLogin from './pages/auth/Login/FacilityLogin'
 
-import UserRegister from './pages/auth/Register/UserRegister'
+import UserRegister from './pages/auth/Register/userRegister1'
 import DoctorRegister from './pages/auth/Register/DoctorRegister'
 import FacilityRegister from './pages/auth/Register/FacilityRegister'
+import { Context } from './context/Context';
 
 
+const App = () => {
+  const { isAuthenticated, setIsAuthenticated, setUser } =
+    useContext(Context);
 
-
-
-
-
-function App() {
-  
-
-  return (
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/v1/user/patient/me",
+          {
+            withCredentials: true,
+          }
+        );
+        setIsAuthenticated(true);
+        setUser(response.data.user);
+      } catch (error) {
+        setIsAuthenticated(false);
+        setUser({});
+      }
+    };
+    fetchUser();
+  }, [isAuthenticated]);
+return (
     <>
-!
+
   
        <BrowserRouter>
       <Routes>
@@ -50,6 +69,7 @@ function App() {
 
         
       </Routes>
+      <ToastContainer/>
      </BrowserRouter>  
     </>
   )

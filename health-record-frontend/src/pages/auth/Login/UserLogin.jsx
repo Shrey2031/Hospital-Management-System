@@ -12,7 +12,7 @@ const UserLogin = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        '/api/v1/login',
+        '/api/v1/login/user',
         {
           email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
           username: !emailOrUsername.includes('@') ? emailOrUsername : undefined,
@@ -28,24 +28,25 @@ const UserLogin = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow mt-10">
-      <h2 className="text-xl font-semibold mb-4">Login as Patient</h2>
-      <form onSubmit={handleLogin} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-semibold mb-4 text-center">Patient Login</h2>
         <input
           type="text"
           placeholder="Email or Username"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded mb-4"
           value={emailOrUsername}
           onChange={(e) => setEmailOrUsername(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
+        <button type="submit" className="w-full bg-sky-500 text-white p-2 rounded">
           Login
         </button>
       </form>

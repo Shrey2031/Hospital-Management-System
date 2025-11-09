@@ -42,7 +42,7 @@ const FacilityLogin = () => {
           className="w-full p-2 border rounded mb-4"
           required
         />
-        <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">Login</button>
+        <button type="submit" className="w-full bg-sky-500 text-white p-2 rounded">Login</button>
       </form>
     </div>
   );
