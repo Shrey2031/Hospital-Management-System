@@ -10,12 +10,12 @@ const FacilityLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/v1/facility/login', {
+      const res = await axios.post('http://localhost:3000/api/v1/login/facility', {
         email,
         password,
       }, { withCredentials: true });
       alert('Login Successful');
-      navigate('/facility/dashboard');
+      navigate('/facilitydashboard');
     } catch (error) {
       alert('Login Failed');
       console.error(error);

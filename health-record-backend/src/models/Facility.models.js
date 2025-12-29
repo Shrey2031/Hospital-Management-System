@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 const facilitySchema = new Schema({
-    name:{
+  
+    fullname:{
         type:String,
         required:true,
       },

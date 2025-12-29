@@ -9,14 +9,35 @@ const healthSchema = new Schema({
      required: true },
   facility: { type: mongoose.Schema.Types.ObjectId, 
     ref: 'Facility' },
-  diagnosis: { type: String },
+                
+    description:{
+    type: String,
+    },      // "Routine annual checkup"
+    recordType: {
+    type: String,
+    enum: ["consultation", "lab", "prescription", "scan"]
+    },
+
+   document:{
+    type: String
+   },           // Cloudinary URL
+  visibility: {
+    type: String,
+    enum: ["private", "doctor", "facility"],
+    default: "private"
+  },
+
+  diagnosis: {
+    type: String 
+  },
+
   prescription: { type: String },
-  document: { type: String }, // upload on clodinary 
+  
   visitDate: { type: Date, default: Date.now }
   },
   
 
    
-{timeseries:true});
+{timestamps:true});
 
 export const Health  = mongoose.model("Health",healthSchema);

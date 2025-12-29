@@ -6,6 +6,13 @@ import axios from 'axios';
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import LandingPages from './pages/LandingPages'
 
+import UserDashboard from './pages/dashboard/UserDashboard';
+import DoctorDashboard from './pages/dashboard/DoctorDashboard';
+import FacilityDashboard from './pages/dashboard/FacilityDashboard';
+
+import Appointment from './pages/auth/Appointment';
+
+import Dashboard from './pages/Dashboard';
 import RoleSelectionLogin from './pages/Auth/RoleselectionLogin';
 import RoleSelectionSignup from './pages/Auth/RoleselecionSignup';
 import UserLogin from './pages/auth/Login/UserLogin'
@@ -48,6 +55,15 @@ return (
       <Routes>
         
         <Route path="/" element={<LandingPages />} />
+        <Route path="/dashboard" element={<UserDashboard/>} />
+
+
+            {/* dashboard  */}
+        <Route path="/userdashboard" element={<UserDashboard/>} />
+        
+        <Route path="/doctordashboard" element={<DoctorDashboard/>} />
+        <Route path="/facilitydashboard" element={<FacilityDashboard/>} />
+
 
 
         {/* roleselection  */}
@@ -66,6 +82,8 @@ return (
         <Route path="/register/doctor" element={<DoctorRegister />} />
         <Route path="/register/facility" element={<FacilityRegister />} />
 
+       {/* appointment routes */}
+        <Route path="/appointment" element={<Appointment />} />
 
         
       </Routes>

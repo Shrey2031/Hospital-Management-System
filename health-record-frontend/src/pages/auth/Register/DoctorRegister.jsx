@@ -1,107 +1,66 @@
-// import { useState } from "react";
-// import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-
-// const DoctorRegister= () => {
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     email: "",
-//     password: "",
-//     specialization: "",
-//     licenseNumber: "",
-//     phone: "",
-//     address: ""
-//   });
-
-//   const navigate = useNavigate();
-
-//   const handleChange = (e) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       [e.target.name]: e.target.value
-//     }));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       await axios.post("/register/doctor", formData);
-//       alert("Doctor registered successfully");
-//       navigate("/");
-//     } catch (err) {
-//       alert("Error: " + err?.response?.data?.message);
-//     }
-//   };
-
-//   return (
-//     <div className="register-container">
-//       <h2>Doctor Registration</h2>
-//       <form onSubmit={handleSubmit}>
-//         <input type="text" name="name" placeholder="Name" onChange={handleChange} required />
-//         <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-//         <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-//         <input type="text" name="specialization" placeholder="Specialization" onChange={handleChange} />
-//         <input type="text" name="licenseNumber" placeholder="License Number" onChange={handleChange} />
-//         <input type="text" name="phone" placeholder="Phone" onChange={handleChange} />
-//         <input type="text" name="address" placeholder="Address" onChange={handleChange} />
-//         <button type="submit">Register</button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default DoctorRegister;
-
 import React, { useState } from 'react';
+import axios from 'axios';
+
+import { useNavigate } from 'react-router-dom';
 
 export default function DoctorRegistrationForm() {
-  const [formData, setFormData] = useState({
-    username: '',
-    fullname:'',
-    email: '',
-    password: '',
-    specialization: '',
-    experienceInYears: '',
-    avatar: null,
-  });
+  const navigateTo = useNavigate();
 
-  const [submitted, setSubmitted] = useState(false);
+  const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
+  const [gender, setGender] = useState('');
+  const [password, setPassword] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [experienceInYears, setExperienceInYears] = useState('');
+  const [avatar, setAvatar] = useState('');
+  
+  
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'avatar') {
-      setFormData((prev) => ({
-        ...prev,
-        avatar: files[0] || null,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      setAvatar(file);
+    };
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
+
+     
+    try {
+        const formData = new FormData();
+      formData.append("fullname", fullname);
+      formData.append("email", email);
+      formData.append("password", password); 
+      
+      formData.append("specialization", specialization);
+      formData.append("experienceInYears", experienceInYears);
+      formData.append("gender", gender);
+      formData.append("avatar", avatar);
+  
+     await axios.post("http://localhost:3000/api/v1/register/doctor", formData, {
+       withCredentials: true,
+       headers:{"Content-Type":"multipart/form-data"}
+     })
+     .then((res) => {
+        navigateTo("/doctordashboard");
+        setFullname('');
+        setEmail('');
+        setPassword('');
+         setGender('');
+        setSpecialization('');
+        setExperienceInYears('');
+        setAvatar('');   
+     });
+    } catch (error) {
+      console.error("Registration error:", error);
     }
-    setSubmitted(true);
-    alert('Doctor registration successful! Your profile is created.');
-    setFormData({
-      username: '',
-      fullname:'',
-      email: '',
-      password: '',
-      specialization: '',
-      experienceInYears: '',
-      avatar: null,
-    });
-    form.reset();
+
+    
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-sky-100 via-blue-100 to-white flex items-center justify-center p-8">
@@ -123,27 +82,8 @@ export default function DoctorRegistrationForm() {
           onSubmit={handleSubmit}
           noValidate
         >
-          {/* Username */}
-          <div className="relative">
-            <label
-              htmlFor="username"
-              className="block text-blue-900 font-semibold mb-1"
-            >
-              Username
-            </label>
-           
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="dr.johnsmith"
-              autoComplete="username"
-              className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
-            />
-          </div>
+      
+
           {/* fullname */}
           <div className="relative">
             <label
@@ -154,14 +94,14 @@ export default function DoctorRegistrationForm() {
             </label>
             
             <input
-              id="username"
-              name="username"
+              id="fullname"
+              name="fullname"
               type="text"
               required
-              value={formData.fullname}
-              onChange={handleChange}
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
               placeholder="dr.johnsmith"
-              autoComplete="username"
+              autoComplete="fullname"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
           </div>
@@ -180,8 +120,8 @@ export default function DoctorRegistrationForm() {
               name="email"
               type="email"
               required
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="doctor@example.com"
               autoComplete="email"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -203,13 +143,58 @@ export default function DoctorRegistrationForm() {
               type="password"
               minLength={8}
               required
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter a strong password"
               autoComplete="new-password"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
           </div>
+
+              {/* Gender (span two columns) md:col-span-2 */}
+          <fieldset
+            className="relative"
+            aria-label="Gender"
+            role="radiogroup"
+          >
+            <legend className="font-semibold text-blue-900 mb-1">Gender</legend>
+            <div className="flex gap-8">
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Male"
+                  required
+                  checked={gender === 'Male'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Male
+              </label>
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Female"
+                  checked={gender === 'Female'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Female
+              </label>
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Other"
+                  checked={gender === 'Other'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Other
+              </label>
+            </div>
+          </fieldset>
 
           {/* Specialization */}
           <div className="relative">
@@ -225,8 +210,8 @@ export default function DoctorRegistrationForm() {
               name="specialization"
               type="text"
               required
-              value={formData.specialization}
-              onChange={handleChange}
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
               placeholder="Cardiology, Neurology, etc."
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
@@ -248,8 +233,8 @@ export default function DoctorRegistrationForm() {
               min="0"
               max="60"
               required
-              value={formData.experienceInYears}
-              onChange={handleChange}
+              value={experienceInYears}
+              onChange={(e) => setExperienceInYears(e.target.value)}
               placeholder="5"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
@@ -267,7 +252,7 @@ export default function DoctorRegistrationForm() {
               id="avatar"
               name="avatar"
               type="file"
-              accept="image/*"
+              accept="image/*,application/pdf"
               onChange={handleChange}
               className="pt-2 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition cursor-pointer"
               aria-describedby="avatarHelp"

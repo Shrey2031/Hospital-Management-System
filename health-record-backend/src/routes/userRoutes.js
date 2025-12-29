@@ -1,25 +1,39 @@
 import { Router } from "express";
 import {upload} from '../middlware/multer.middleware.js';
-import {verifyJWT} from '../middlware/auth.middleware.js';
-import { generateAccessAndRefreshToken, loginUser, logoutUser, registerUser } from "../controllers/user.controllers.js";
-import { registerDoctor } from "../controllers/doctor.controller.js";
-import { registerFacility } from "../controllers/facility.controller.js";
-import { uploadHealthRecord } from "../controllers/healthRecord.controller.js";
+import {UserverifyJWT} from '../middlware/auth.middleware.js'; 
+import { generateAccessAndRefreshToken, getUserDetails, loginUser, logoutUser, registerUser } from "../controllers/user.controllers.js"
+
+import { createHealthRecord } from "../controllers/healthRecord.controller.js";
 
 const router = Router();
-router.route('/upload').post(upload.fields(
+// router.route('/upload').post(upload.fields(
+//     [
+//         { name:"document",
+//             maxCount:1
+//         }
+//     ]),createHealthRecord);
+
+router.route('/register/user').post(upload.fields(
     [
         { name:"document",
-            maxCount:1,
+            maxCount:1
         }
-    ]),uploadHealthRecord);
-router.route('/refresh-token').post(generateAccessAndRefreshToken);
-router.route('/login').post(loginUser)
-router.route('/logout').post(verifyJWT,logoutUser);
+    ]),registerUser);
+// router.route('/register/user').post(registerUser);
+ 
+    
 
-router.route('/register/user').post(registerUser);
-router.route('/register/doctor').post(registerDoctor);
-router.route('/register/facility').post(registerFacility);
+
+router.route('/refresh-token').post(generateAccessAndRefreshToken);
+router.route('/login/user').post(loginUser);
+
+
+router.route('/user').get(UserverifyJWT,getUserDetails);
+
+router.route('/logout/user').post(UserverifyJWT,logoutUser);
+
+
+
 
 
 

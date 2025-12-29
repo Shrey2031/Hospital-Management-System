@@ -1,7 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [user, setUser] = useState(null);
+  const [records, setRecords] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+    const navigate = useNavigate();
+  
+
+  useEffect(() => {
+   const fetchUser = async () => {
+   try {
+  const res = await axios.get("http://localhost:3000/api/v1/user", {
+    withCredentials: true,
+  })
+   .then(res => {
+        setUser(res.data.user);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log(err);
+        setLoading(false);
+      });
+  } catch (err) {
+  setError("Authentication failed. Please login again.");
+  } finally {
+  setLoading(false);
+  }
+  };
+  fetchUser();
+  }, []);
+
+  useEffect(() => {
+  const fetchRecords = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/v1/health/user",
+        { withCredentials: true }
+      );
+
+      console.log("API DATA:", res.data); // DEBUG
+      setRecords(res.data.data.records);
+      
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchRecords();
+}, []);
+
+useEffect(() => {
+  const fetchAppointments = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/v1/appoinment/user",
+        { withCredentials: true }
+      );
+       console.log("Appointments DATA:", res.data.data); // DEBUG
+      setAppointments(res.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchAppointments();
+}, []);
+
   
   // Sample user data
   const userData = {
@@ -26,11 +98,11 @@ export default function UserDashboard() {
   };
 
   // Sample health records
-  const healthRecords = [
-    { date: '2023-06-15', doctor: 'Dr. Smith', type: 'Checkup', notes: 'Routine annual checkup' },
-    { date: '2023-04-10', doctor: 'Dr. Lee', type: 'Consultation', notes: 'Follow-up on medication' },
-    { date: '2023-01-05', doctor: 'Dr. Patel', type: 'Lab Test', notes: 'Blood work results normal' }
-  ];
+  // const healthRecords = [
+  //   { date: '2023-06-15', doctor: 'Dr. Smith', type: 'Checkup', notes: 'Routine annual checkup' },
+  //   { date: '2023-04-10', doctor: 'Dr. Lee', type: 'Consultation', notes: 'Follow-up on medication' },
+  //   { date: '2023-01-05', doctor: 'Dr. Patel', type: 'Lab Test', notes: 'Blood work results normal' }
+  // ];
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-sky-50 via-blue-50 to-white">
@@ -42,11 +114,12 @@ export default function UserDashboard() {
             <span className="material-icons text-blue-600">notifications</span>
             <div className="flex items-center">
               <img 
-                src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9703b60a-a81b-440e-b0c9-427387a93821.png" 
+                // src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9703b60a-a81b-440e-b0c9-427387a93821.png" 
+                src='https://tse4.mm.bing.net/th/id/OIP.9UChLYifGrntmmzueKA9rAHaHh?pid=Api&P=0&h=180'
                 alt="User profile" 
                 className="w-10 h-10 rounded-full border-2 border-sky-400"
               />
-              <span className="ml-2 font-medium text-blue-900">{userData.name}</span>
+              <span className="ml-2 font-medium text-blue-900">{user?.username}</span>
             </div>
           </div>
         </div>
@@ -56,7 +129,7 @@ export default function UserDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-sky-500 to-blue-600 rounded-2xl p-6 mb-8 text-white shadow-lg">
-          <h2 className="text-2xl font-bold mb-2">Welcome back, {userData.name}!</h2>
+          <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.username}!</h2>
           <p className="text-sky-100">Your health is our priority. Here's your personalized dashboard.</p>
         </div>
 
@@ -100,12 +173,12 @@ export default function UserDashboard() {
                 Personal Information
               </h3>
               <div className="space-y-3">
-                <p><span className="font-medium text-blue-800">Name:</span> {userData.name}</p>
-                <p><span className="font-medium text-blue-800">Email:</span> {userData.email}</p>
-                <p><span className="font-medium text-blue-800">Phone:</span> {userData.phone}</p>
-                <p><span className="font-medium text-blue-800">Gender:</span> {userData.gender}</p>
-                <p><span className="font-medium text-blue-800">Blood Group:</span> {userData.bloodGroup}</p>
-                <p><span className="font-medium text-blue-800">Address:</span> {userData.address}</p>
+                <p><span className="font-medium text-blue-800">Name:</span> {user?.username}</p>
+                <p><span className="font-medium text-blue-800">Email:</span> {user?.email}</p>
+                <p><span className="font-medium text-blue-800">Phone:</span> {user?.phone}</p>
+                <p><span className="font-medium text-blue-800">Gender:</span> {user?.gender}</p>
+                <p><span className="font-medium text-blue-800">Blood Group:</span> {user?.bloodGroup}</p>
+                <p><span className="font-medium text-blue-800">Address:</span> {user?.address}</p>
               </div>
               <button className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
                 <span className="material-icons mr-1 text-sm">edit</span>
@@ -159,7 +232,8 @@ export default function UserDashboard() {
                   <p className="text-sm text-gray-600">{userData.lastAppointment}</p>
                 </div>
               </div>
-              <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+    
+              <button onClick={() => navigate("/appointment")}  className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center">
                 <span className="material-icons mr-1 text-sm">add</span>
                 Schedule New Appointment
               </button>
@@ -177,12 +251,12 @@ export default function UserDashboard() {
               </button>
             </div>
             <div className="divide-y divide-gray-200">
-              {healthRecords.map((record, index) => (
-                <div key={index} className="px-6 py-4 hover:bg-sky-50 transition">
+              {Array.isArray(records) && records.map((record) => (
+                <div key={record._id} className="px-6 py-4 hover:bg-sky-50 transition"> 
                   <div className="flex justify-between">
                     <div>
-                      <p className="font-medium text-blue-900">{record.type} with {record.doctor}</p>
-                      <p className="text-sm text-gray-600">{record.date}</p>
+                      <p className="font-medium text-blue-900">{record.description} with {record.doctor?.fullname}</p>
+                      <p className="text-sm text-gray-600">{new Date(record.createdAt).toDateString()}</p>
                     </div>
                     <div className="flex space-x-2">
                       <button className="text-blue-600 hover:text-blue-800">
@@ -193,9 +267,10 @@ export default function UserDashboard() {
                       </button>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-700">{record.notes}</p>
+                  <p className="mt-2 text-sm text-gray-700">{record.diagnosis}</p>
                 </div>
-              ))}
+               ))} 
+
             </div>
           </div>
         )}
@@ -236,12 +311,12 @@ export default function UserDashboard() {
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-bold text-blue-900">Upcoming Appointments</h3>
-              <button className="text-sm bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center">
+              <button  onClick={() => navigate('/appointment')} className="text-sm bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center">
                 <span className="material-icons mr-1 text-sm">add</span>
                 Book Appointment
               </button>
             </div>
-            <div className="p-6">
+            {/* <div className="p-6">
               <div className="bg-blue-50 rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center">
                   <div>
@@ -269,7 +344,38 @@ export default function UserDashboard() {
                 <p className="text-sm text-gray-600">Springfield Medical Labs</p>
                 <p className="text-sm text-gray-600">September 12, 2023 • 8:00 AM</p>
               </div>
-            </div>
+            </div> */}
+            <div className="p-6">
+      
+
+        {Array.isArray(appointments) && appointments.map((appt) => (
+         <div key={appt._id} className="bg-blue-50 rounded-lg p-4 mb-4">
+           <div className="flex justify-between items-center">
+           <div>
+          <p className="font-medium text-blue-900">
+            {appt.title || "Consultation"}
+          </p>
+          <p className="text-sm text-gray-600">
+            With {appt.doctor?.Name}
+          </p>
+          <p className="text-sm text-gray-600">
+            {new Date(appt.createdAt).toLocaleDateString()}
+          </p>
+          </div>
+
+           <div className="flex space-x-2">
+            <button className="text-blue-600 hover:text-blue-800">
+            <span className="material-icons">edit</span>
+            </button>
+          <button className="text-blue-600 hover:text-blue-800">
+            <span className="material-icons">cancel</span>
+          </button>
+           </div>
+        </div>
+      </div>
+      ))}
+     </div>
+
           </div>
         )}
       </main>

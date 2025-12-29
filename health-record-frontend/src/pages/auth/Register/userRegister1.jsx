@@ -1,101 +1,89 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
 
 export default function RegistrationForm() {
-  const [formData, setFormData] = useState({
-    username: '',
-    fullname:'',
-    email: '',
-    phone: '',
-    age:'',
-    password: '',
-    address: '',
-    bloodgroup: '',
-    gender: '',
-  });
+ 
+  const navigateTo = useNavigate();
+   
+  const [fullname, setFullname] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
+  const [age, setAge] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [phone, setPhone] = useState('');
+  const [gender, setGender] = useState('');
+  const [document, setDocument] = useState('');
 
-  const [submitted, setSubmitted] = useState(false);
+  // const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      setDocument(file);
+    };
   };
 
-  // const handleSubmit = (e) => {
+  // const handleRegister =  async(e) => {
   //   e.preventDefault();
-  //   const form = e.target;
-  //   if (!form.checkValidity()) {
-  //     form.reportValidity();
-  //     return;
+  //   try {
+  //     await axios.post(
+  //       'http://localhost:3000/api/v1/register/user',{fullname,username,email,password,age,gender,address,phone,bloodGroup},{
+  //         withCredentials:true,
+  //         headers:{"Content-Type":"application/json"}
+  //       }
+  //     )
+  //     .then((res) => {
+  //       navigateTo("/userdashboard");
+  //     })
+  //   } catch (error) {
+  //     console.log(error);
   //   }
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-
-  const formDataToSend = new FormData();
-  formDataToSend.append('username', formData.username);
-  formDataToSend.append('fullname', formData.fullname);
-
-  formDataToSend.append('email', formData.email);
-  formDataToSend.append('password', formData.password);
-  formDataToSend.append('gender', formData.gender);
-  formDataToSend.append('address', formData.address);
-  formDataToSend.append('phone', formData.phone);
-  formDataToSend.append('bloodGroup', formData.bloodgroup);
-  formDataToSend.append('age',formData.age); // hardcoded or dynamically collected if needed
-
-  // If you add avatar upload in form later
-  // formDataToSend.append('avatar', fileInput.files[0]);
-
-  try {
-    const res = await axios.post('http://localhost:3000/api/v1/register/user', 
-       formData,
-       {
-         headers: {
-          'Content-Type': 'application/json',
-        },
-    });
-
-    
-      if (res.status === 200 || res.status === 201) {
-  alert('Registration successful!');
-  // ...rest of success logic
-  setFormData({
-        fullname: '',
-        username: '',
-        email: '',
-        phone: '',
-        age:'',
-        password: '',
-        address: '',
-        bloodgroup: '',
-        gender: '',
-      });
-      setSubmitted(true);
-} else {
-  alert(`Error: ${res?.data?.message || 'Something went wrong'}`);
-}
-  }
- catch (error) {
-    console.error(error);
-    alert('Network error or server is down.');
-  }
-
+  // };
+   const handleRegister = async (e) => {
+    e.preventDefault();
   
+    try {
+        const formData = new FormData();
+      formData.append("fullname", fullname);
+      formData.append("username", username);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("address", address);
+      formData.append("age", age);
+      formData.append("bloodGroup", bloodGroup);
+      formData.append("phone", phone);
+      formData.append("gender", gender);
+      formData.append("document", document);
   
-
-
-
-    
+     await axios.post("http://localhost:3000/api/v1/register/user", formData, {
+       withCredentials: true,
+       headers:{"Content-Type":"multipart/form-data"}
+     })
+     .then((res) => {
+        navigateTo("/userdashboard");
+        setFullname('');
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setAddress('');
+        setAge('');
+        setBloodGroup('');
+        setPhone('');
+        setGender('');
+        
+     });
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
+       
   };
-
+   
+  
   return (
     <div className="min-h-screen bg-gradient-to-tr from-sky-100 via-blue-100 to-white flex items-center justify-center p-8">
       <section
@@ -113,7 +101,7 @@ export default function RegistrationForm() {
         </p>
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6"
-          onSubmit={handleSubmit}
+          onSubmit={handleRegister}
           noValidate
         >
           {/* Full Name */}
@@ -130,8 +118,8 @@ export default function RegistrationForm() {
               name="fullname"
               type="text"
               required
-              value={formData.fullname}
-              onChange={handleChange}
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
               placeholder="John Doe"
               autoComplete="name"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -151,8 +139,8 @@ export default function RegistrationForm() {
               name="username"
               type="text"
               required
-              value={formData.username}
-              onChange={handleChange}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="John Doe"
               autoComplete="name"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -173,8 +161,8 @@ export default function RegistrationForm() {
               name="email"
               type="email"
               required
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               autoComplete="email"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -196,8 +184,8 @@ export default function RegistrationForm() {
               type="tel"
               pattern="^\+?[0-9\s\-]{7,15}$"
               required
-              value={formData.phone}
-              onChange={handleChange}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               placeholder="+1-234-567-8901"
               autoComplete="tel"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -219,8 +207,8 @@ export default function RegistrationForm() {
               type="password"
               minLength={8}
               required
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter a strong password"
               autoComplete="new-password"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -240,10 +228,10 @@ export default function RegistrationForm() {
          
             <select
               id="bloodgroup"
-              name="bloodgroup"
+              name="bloodGroup"
               required
-              value={formData.bloodgroup}
-              onChange={handleChange}
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             >
               <option value="" disabled>
@@ -276,13 +264,57 @@ export default function RegistrationForm() {
               min="0"
               max="60"
               required
-              value={formData.age}
-              onChange={handleChange}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
               placeholder="5"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
           </div>
-
+             
+               {/* Gender (span two columns) md:col-span-2 */}
+          <fieldset
+            className="relative"
+            aria-label="Gender"
+            role="radiogroup"
+          >
+            <legend className="font-semibold text-blue-900 mb-1">Gender</legend>
+            <div className="flex gap-8">
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Male"
+                  required
+                  checked={gender === 'Male'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Male
+              </label>
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Female"
+                  checked={gender === 'Female'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Female
+              </label>
+              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Other"
+                  checked={gender === 'Other'}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="accent-sky-500 mr-2 w-5 h-5"
+                />
+                Other
+              </label>
+            </div>
+          </fieldset>
           
           {/* Address (span two columns) */}
           <div className="relative md:col-span-2">
@@ -297,60 +329,38 @@ export default function RegistrationForm() {
               id="address"
               name="address"
               required
-              value={formData.address}
-              onChange={handleChange}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter your address"
               rows={3}
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition resize-none"
             />
           </div>
 
-         
 
-          {/* Gender (span two columns) */}
-          <fieldset
-            className="md:col-span-2"
-            aria-label="Gender"
-            role="radiogroup"
-          >
-            <legend className="font-semibold text-blue-900 mb-1">Gender</legend>
-            <div className="flex gap-8">
-              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Male"
-                  required
-                  checked={formData.gender === 'Male'}
-                  onChange={handleChange}
-                  className="accent-sky-500 mr-2 w-5 h-5"
-                />
-                Male
-              </label>
-              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Female"
-                  checked={formData.gender === 'Female'}
-                  onChange={handleChange}
-                  className="accent-sky-500 mr-2 w-5 h-5"
-                />
-                Female
-              </label>
-              <label className="flex items-center cursor-pointer select-none text-blue-900 font-medium">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Other"
-                  checked={formData.gender === 'Other'}
-                  onChange={handleChange}
-                  className="accent-sky-500 mr-2 w-5 h-5"
-                />
-                Other
-              </label>
-            </div>
-          </fieldset>
+   
+
+           {/* Avatar upload - spans two columns */}
+          <div className="relative md:col-span-2">
+            <label
+              htmlFor="document"
+              className="block text-blue-900 font-semibold mb-1"
+            >
+              upload your document 
+            </label>
+            <input
+              id="document"
+              name="document"
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={handleChange}
+              className="pt-2 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition cursor-pointer"
+              aria-describedby="avatarHelp"
+            />
+            <p id="avatarHelp" className="text-sm text-blue-700 mt-1">
+              Upload your profile image (optional).
+            </p>
+          </div>
 
           {/* Submit Button (span two columns) */}
           <button

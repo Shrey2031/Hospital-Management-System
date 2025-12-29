@@ -1,4 +1,3 @@
-// RoleCard.jsx
 import { Link } from 'react-router-dom';
 
 const RoleCard = ({ role, description, route, icon }) => {

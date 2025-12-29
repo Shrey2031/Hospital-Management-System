@@ -4,11 +4,15 @@ import bcrypt from 'bcrypt';
 
 const userSchema = new Schema({
 
-
-    username:{
+    fullname:{
         type:String,
         required:true
       },
+      username:{
+        type:String,
+        required:true
+      },
+
       password:{
         type:String,
         required:true
@@ -39,7 +43,7 @@ const userSchema = new Schema({
       },
       gender:{
         type:String,
-        enum:['M','F','O'],
+        enum:['Male','Female','Other'],
         required:true,
       },
       phone:{
@@ -48,15 +52,16 @@ const userSchema = new Schema({
         
       },
       document:{
-        type:String // cloudinary upload 
+        type:String,
       },
+    
       refreshToken:{
         type:String,
        }
 
       
 
-},{timeseries:true}
+},{timestamps:true}
 
 );
 
@@ -78,7 +83,7 @@ userSchema.methods.generateAccessToken = function(){
           _id:this._id,
           email: this.email,
           username: this.username, 
-          fullname:this.fullname   
+          // fullname:this.fullname   
       
       },
       process.env.ACCESS_TOKEN_SECRET,

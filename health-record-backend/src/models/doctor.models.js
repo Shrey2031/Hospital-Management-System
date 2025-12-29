@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 const doctorSchema = new mongoose.Schema({
-  name:{
+  fullname:{
     type:String,
     required:true
   },
@@ -13,6 +15,11 @@ const doctorSchema = new mongoose.Schema({
      type:String,
       required:true
     },
+    gender:{
+        type:String,
+        enum:['Male','Female','Other'],
+        required:true,
+      },
     role:{ 
       type: String, 
       default: 'doctor' 
@@ -25,6 +32,10 @@ const doctorSchema = new mongoose.Schema({
     type:Number,
     default:0,
   },
+  avatar:{
+    type:String,
+    required:true // document upload
+  },
   workInHospital:[
     {
       type:mongoose.Schema.Types.ObjectId,
@@ -33,7 +44,7 @@ const doctorSchema = new mongoose.Schema({
   ]
 
 },{timestamps:true});
-export const Doctor = mongoose.model('Doctor',doctorSchema);
+
 
 doctorSchema.pre("save",async function (next) {
   if (!this.isModified("password")) return next();
@@ -76,3 +87,6 @@ doctorSchema.methods.generateRefreshToken = function(){
       }
   ) 
 }
+
+
+export const Doctor = mongoose.model('Doctor',doctorSchema);

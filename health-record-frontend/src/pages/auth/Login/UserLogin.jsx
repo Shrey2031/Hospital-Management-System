@@ -12,7 +12,7 @@ const UserLogin = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        '/api/v1/login/user',
+        'http://localhost:3000/api/v1/login/user',
         {
           email: emailOrUsername.includes('@') ? emailOrUsername : undefined,
           username: !emailOrUsername.includes('@') ? emailOrUsername : undefined,
@@ -21,7 +21,7 @@ const UserLogin = () => {
         { withCredentials: true }
       );
       console.log('Login successful', response.data);
-      navigate('/dashboard');
+      navigate('/userdashboard');
     } catch (error) {
       console.error('Login error', error);
     }

@@ -10,12 +10,12 @@ const DoctorLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/v1/doctor/login', {
+      const res = await axios.post('http://localhost:3000/api/v1/login/doctor', {
         email,
         password,
       }, { withCredentials: true });
       alert('Login Successful');
-      navigate('/doctor/dashboard');
+      navigate('/doctordashboard');
     } catch (error) {
       alert('Login Failed');
       console.error(error);

@@ -19,12 +19,12 @@ const PORT = process.env.PORT || 3000;
 
 // dotenv.config();
 // import dotenv from 'dotenv';
-dotenv.config({ path: './.env' }); // Optional if your .env file is in the root
+dotenv.config({ path: './.env' }); 
 
 
 
 
-console.log('MONGO_URI:', process.env.MONGO_URI);  // Debugging line
+// console.log('MONGO_URI:', process.env.MONGO_URI);  // Debugging line
 
 connectDB()
 .then(() => {

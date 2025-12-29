@@ -1,46 +1,55 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function FacilityRegistrationForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    address: '',
-    city: '',
-    specialisedIn: '',
-    phone: '',
-  });
+   const navigate = useNavigate();
 
-  const [submitted, setSubmitted] = useState(false);
+  const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [specialisedIn, setSpecialisedIn] = useState('');
+  const [phone, setPhone] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
+
+    try {
+      await axios.post(
+        'http://localhost:3000/api/v1/register/facility',
+        {fullname, email, password, address, city, specialisedIn, phone},
+        { withCredentials: true,
+          headers: { 'Content-Type': 'application/json' } ,
+         }
+      )
+      .then((res) => {
+        navigate('/facilitydashboard');
+        setFullname('');
+        setEmail('');
+        setPassword('');
+        setAddress('');
+        setCity('');
+        setSpecialisedIn('');
+        setPhone('');   
+     
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
     }
-    setSubmitted(true);
-    alert('Facility registration successful! Your profile is created.');
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      address: '',
-      city: '',
-      specialisedIn: '',
-      phone: '',
-    });
-    form.reset();
+
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-sky-100 via-blue-100 to-white flex items-center justify-center p-8">
@@ -76,8 +85,8 @@ export default function FacilityRegistrationForm() {
               name="name"
               type="text"
               required
-              value={formData.name}
-              onChange={handleChange}
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
               placeholder="HealthCare Center"
               autoComplete="organization"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -98,8 +107,8 @@ export default function FacilityRegistrationForm() {
               name="email"
               type="email"
               required
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="contact@healthcare.com"
               autoComplete="email"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -121,8 +130,8 @@ export default function FacilityRegistrationForm() {
               type="password"
               minLength={8}
               required
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter a strong password"
               autoComplete="new-password"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -143,8 +152,8 @@ export default function FacilityRegistrationForm() {
               name="address"
               type="text"
               required
-              value={formData.address}
-              onChange={handleChange}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
               placeholder="123 Wellness St."
               autoComplete="street-address"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -165,8 +174,8 @@ export default function FacilityRegistrationForm() {
               name="city"
               type="text"
               required
-              value={formData.city}
-              onChange={handleChange}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
               placeholder="Springfield"
               autoComplete="address-level2"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
@@ -187,8 +196,8 @@ export default function FacilityRegistrationForm() {
               name="specialisedIn"
               type="text"
               required
-              value={formData.specialisedIn}
-              onChange={handleChange}
+              value={specialisedIn}
+              onChange={(e) => setSpecialisedIn(e.target.value)}
               placeholder="Cardiology, Pediatrics, etc."
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"
             />
@@ -209,8 +218,8 @@ export default function FacilityRegistrationForm() {
               type="tel"
               pattern="^\+?[0-9\s\-]{7,15}$"
               required
-              value={formData.phone}
-              onChange={handleChange}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               placeholder="+1-234-567-8901"
               autoComplete="tel"
               className="pl-10 pr-3 py-3 w-full rounded-xl border-2 border-sky-300 bg-sky-50 text-blue-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300 transition"

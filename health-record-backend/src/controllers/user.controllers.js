@@ -5,6 +5,7 @@ import { User } from "../models/users.models.js";
 import { ApiResponse } from "../utils/apiResponce.js";
 import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
+import { use } from "react";
 
 
 const generateAccessAndRefreshToken = async(userId) =>{
@@ -23,18 +24,10 @@ const generateAccessAndRefreshToken = async(userId) =>{
     }
 }
 const registerUser = asyncHandler(async (req,resp) => {
-    // get user details from frontend
-    //validation - not empty
-    // check if user already exists: username, email
-    
-    //upload them to cloudinary , avatar
-    // create user object - create entry in db
-    // remove password and refresh token field from response
-    //check for user creation
-    // return res
- 
-    const {username,email,password,age,gender,address,phone,bloodGroup} = req.body
+
+    const {fullname,username,email,password,age,gender,address,phone,bloodGroup} = req.body;
     console.log("email: ",email);
+    
  //    console.log(req.file);
  
     if(
@@ -52,24 +45,28 @@ const registerUser = asyncHandler(async (req,resp) => {
          throw new  ApiError(409, "user with email and password already exist")
      }
 
-     const documentLocalPath = req.files?.avatar[0]?.path;
-     const document = await uploadOnCloudinary(documentLocalPath);
+     const documentLocalPath = req.files?.document[0]?.path;
+    if(!documentLocalPath){
 
+        throw new  ApiError(400, "documentlocalpath  file is required ")
+    }
 
- 
-    
- 
- 
+    const document = await uploadOnCloudinary(documentLocalPath);
+    // if(!document){
+    //     throw new  ApiError(400, "document file is required ");
+
+    // }
       const user = await User.create({
-         username: username,
-         email,
+         fullname,
+         username,
+         email: email,
          password,
          age,
          gender,
          bloodGroup,
          address,
          phone,
-         document:document?.url || "",
+         document:document.url || "",
          
      })
  
@@ -96,8 +93,6 @@ const registerUser = asyncHandler(async (req,resp) => {
     // password check
     // access and refresh token
     // send cookie
- 
- 
     const {email,username,password} = req.body;
     console.log(email);
     if(!username && !email){
@@ -167,11 +162,29 @@ const registerUser = asyncHandler(async (req,resp) => {
 
 })
 
+
+
+// Get a specific user by ID
+const getUserDetails = asyncHandler(async (req, res) => {
+
+  const user = req.user;
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
+
+
+
+
+
  export {
     registerUser,
     generateAccessAndRefreshToken,
     loginUser,
     logoutUser,
+    getUserDetails,
 
  }
 
