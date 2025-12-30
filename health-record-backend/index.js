@@ -8,9 +8,9 @@ import { app } from './app.js';
 // connectDB();
 
 
-// app.get('/',(req,resp) => {
-//     resp.send("app is running successfully")
-// })
+app.get('/',(req,resp) => {
+    resp.send("app is running successfully")
+})
 
 const PORT = process.env.PORT || 3000;
 // const PORT = 3000;
