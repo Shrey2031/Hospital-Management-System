@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 import { useNavigate } from 'react-router-dom';
 
@@ -40,7 +42,7 @@ export default function DoctorRegistrationForm() {
       formData.append("gender", gender);
       formData.append("avatar", avatar);
   
-     await axios.post("http://localhost:3000/api/v1/register/doctor", formData, {
+     await axios.post(`${BASE_URL}/register/doctor`, formData, {
        withCredentials: true,
        headers:{"Content-Type":"multipart/form-data"}
      })

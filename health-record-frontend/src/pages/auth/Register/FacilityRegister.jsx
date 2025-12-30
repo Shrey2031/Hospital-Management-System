@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 export default function FacilityRegistrationForm() {
    const navigate = useNavigate();
@@ -27,7 +29,8 @@ export default function FacilityRegistrationForm() {
 
     try {
       await axios.post(
-        'http://localhost:3000/api/v1/register/facility',
+        `${BASE_URL}/register/facility`, 
+        
         {fullname, email, password, address, city, specialisedIn, phone},
         { withCredentials: true,
           headers: { 'Content-Type': 'application/json' } ,

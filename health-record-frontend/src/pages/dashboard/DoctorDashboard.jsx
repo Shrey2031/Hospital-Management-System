@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -36,7 +38,7 @@ const DoctorDashboard = () => {
     useEffect(() => {
    const fetchUser = async () => {
    try {
-  const res = await axios.get("http://localhost:3000/api/v1/doctor/", {
+  const res = await axios.get(`${BASE_URL}/doctor/`, {
     withCredentials: true,
   })
    .then(res => {

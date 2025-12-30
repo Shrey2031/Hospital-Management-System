@@ -1,6 +1,8 @@
 import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 
 export default function UserDashboard() {
@@ -17,7 +19,7 @@ export default function UserDashboard() {
   useEffect(() => {
    const fetchUser = async () => {
    try {
-  const res = await axios.get("http://localhost:3000/api/v1/user", {
+  const res = await axios.get(`${BASE_URL}/user`, {
     withCredentials: true,
   })
    .then(res => {
@@ -41,7 +43,7 @@ export default function UserDashboard() {
   const fetchRecords = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3000/api/v1/health/user",
+        `${BASE_URL}/health/user`, 
         { withCredentials: true }
       );
 

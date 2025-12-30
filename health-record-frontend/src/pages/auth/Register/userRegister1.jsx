@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 export default function RegistrationForm() {
  
@@ -28,22 +30,7 @@ export default function RegistrationForm() {
     };
   };
 
-  // const handleRegister =  async(e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.post(
-  //       'http://localhost:3000/api/v1/register/user',{fullname,username,email,password,age,gender,address,phone,bloodGroup},{
-  //         withCredentials:true,
-  //         headers:{"Content-Type":"application/json"}
-  //       }
-  //     )
-  //     .then((res) => {
-  //       navigateTo("/userdashboard");
-  //     })
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+
    const handleRegister = async (e) => {
     e.preventDefault();
   
@@ -60,7 +47,7 @@ export default function RegistrationForm() {
       formData.append("gender", gender);
       formData.append("document", document);
   
-     await axios.post("http://localhost:3000/api/v1/register/user", formData, {
+     await axios.post(`${BASE_URL}/register/user`, formData, {
        withCredentials: true,
        headers:{"Content-Type":"multipart/form-data"}
      })

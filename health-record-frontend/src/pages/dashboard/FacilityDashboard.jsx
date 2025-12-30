@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const FacilityDashboard = () => {
   const [profile] = useState({
