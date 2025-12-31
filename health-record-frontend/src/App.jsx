@@ -10,16 +10,16 @@ import UserDashboard from './pages/dashboard/UserDashboard';
 import DoctorDashboard from './pages/dashboard/DoctorDashboard';
 import FacilityDashboard from './pages/dashboard/FacilityDashboard';
 
-import Appointment from './pages/Auth/Appointment';
-import RoleSelectionLogin from './pages/Auth/RoleselectionLogin';
-import RoleSelectionSignup from './pages/Auth/RoleselecionSignup';
-import UserLogin from './pages/Auth/Login/UserLogin'
-import DoctorLogin from './pages/Auth/Login/DoctorLogin'
-import FacilityLogin from './pages/Auth/Login/FacilityLogin'
+import Appointment from './pages/auth/Appointment';
+import RoleSelectionLogin from './pages/auth/RoleselectionLogin';
+import RoleSelectionSignup from './pages/auth/RoleselecionSignup';
+import UserLogin from './pages/auth/Login/UserLogin'
+import DoctorLogin from './pages/auth/Login/DoctorLogin'
+import FacilityLogin from './pages/auth/Login/FacilityLogin'
 
-import UserRegister from './pages/Auth/Register/userRegister1'
-import DoctorRegister from './pages/Auth/Register/DoctorRegister'
-import FacilityRegister from './pages/Auth/Register/FacilityRegister'
+import UserRegister from './pages/auth/Register/userRegister1'
+import DoctorRegister from './pages/auth/Register/DoctorRegister'
+import FacilityRegister from './pages/auth/Register/FacilityRegister'
 import { Context } from './context/Context';
 
 
