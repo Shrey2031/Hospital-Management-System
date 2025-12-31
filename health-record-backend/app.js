@@ -10,7 +10,8 @@ const app = express();
 // }))
 
 app.use(cors({
-    origin:'https://hospital-management-system-xzid.vercel.app',
+    // origin:'https://hospital-management-system-xzid.vercel.app',
+    origin:'http://localhost:5173',
     methods:['GET','PUT','POST','DELETE'],
     credentials:true
 }))

@@ -63,7 +63,8 @@ useEffect(() => {
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3000/api/v1/appoinment/user",
+        
+        `${BASE_URL}/appoinment/user`,
         { withCredentials: true }
       );
        console.log("Appointments DATA:", res.data.data); // DEBUG
