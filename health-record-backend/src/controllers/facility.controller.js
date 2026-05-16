@@ -1,180 +1,176 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponce.js";
-import {Facility} from '../models/Facility.models.js';
+import { FacilityProfile } from "../models/FacilityProfile.js";
+import { DoctorProfile } from "../models/doctorProfile.model.js";
+import { User } from "../models/users.models.js";
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
 
-const generateAccessAndRefreshToken = async(userId) =>{
+export const getFacilityProfile = async (req, res) => {
     try {
-       const user = await Facility.findById(userId)
-       const accessToken = user.generateAccessToken()
-       const refreshToken = user.generateRefreshToken()
+        const facility = await FacilityProfile.findOne({ userId: req.user._id })
+            .populate('doctors', 'fullName specialization consultationFee')
+            .select('-__v');
 
-       user.refreshToken = refreshToken;
-      await  user.save({validateBeforeSave: false})
-
-       return {accessToken,refreshToken}
-
-    } catch (error) {
-        throw new ApiError(500,'something went wrong while generating refresh and access token')
-    }
-}
-const registerFacility = asyncHandler(async (req,resp) => {
-    
-    const {fullname,email,password,address,city,specialisedIn,phone} = req.body;
-    console.log("email: ",email);
- //    console.log(req.file);
- 
-    if(
-        [fullname,email,password].some((field) => field?.trim() === "" )
- 
-    ){
-              throw new ApiError (400,"all fields are mandatory")
-    }
- 
-    const existedUser = await Facility.findOne({
-      $or: [{ name: fullname }, { email: email }] 
-     })
- 
-     if(existedUser){
-         throw new  ApiError(409, "user with email and password already exist")
-     }
-
-     
-      const user = await Facility.create({
-         fullname,
-         email,
-         password,
-         address,
-         specialisedIn,
-         phone,
-         city,
-         
-     })
- 
-     const createdUser = await  Facility.findById(user._id).select(
-         "-password -refreshToken"
-     )
- 
-     if(!createdUser){
-         throw new ApiError(500, "user not found")
-     }
- 
-     return resp.status(201).json(
-         new ApiResponse(200,createdUser,"facility register successfully")
-     )
- 
- 
- 
- })
-
-  const loginFacility = asyncHandler(async(req,resp) => {
-    // req.body -> data
-    //username or  email
-    // find the user
-    // password check
-    // access and refresh token
-    // send cookie
- 
- 
-    const {email,password} = req.body;
-    
-    if(!password && !email){
-     throw new ApiError(400,'username or email is required')
-    }
- 
-  
-    const user = await Facility.findOne({ email }).select("+password");
-       if (!user) {
-        return next(new ErrorHandler("Invalid Email Or Password!", 400));
-      }
- 
-    if(!user){
-     throw new ApiError(404,'user does not exist')
-    }
- 
-    const isPasswordValid = await user.isPasswordCorrect(password);
-    if(!isPasswordValid){
-     throw new ApiError(401,'invalid password')
-    }
- 
-    const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user._id);
- 
-    const loggedInUser = await Facility.findById(user._id).select("-password -refreshToken");
- 
-    const options = {
-     httpOnly: true,
-     secure: true
- 
-    }
- 
-    return resp.status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
-    .json(
-      new ApiResponse(
-         200,
-         {
-             user:loggedInUser,accessToken,refreshToken
-         },
-         "user login Successfully"
-      )
-    )
-    
- })
-
- const logoutFacility = ( async (req,resp) => {
-     await  Facility.findByIdAndUpdate(
-         req.user._id,
-         {
-             $unset:{
-                 refreshToken: 1
-             }
-         },
-         {
-             new:true
-         }
-     )
- 
-     const options = {
-         httpOnly: true,
-         secure: true
-     
+        if (!facility) {
+            return res.status(404).json({ error: 'Facility not found' });
         }
- 
-    return resp.status(200)
-     .clearCookie("accessToken",options)
-     .clearCookie("refreshToken",options)
-     .json(new ApiResponse(200,{},"user  logged Out"))
- 
- })
 
- const getAllFacility = asyncHandler(async (req, res) => {
-   const doctors = await Facility.find().select("-password");
- 
-   res.status(200).json({
-     success: true,
-     count: Facility.length,
-     doctors,
-   });
- 
-    
- });
+        res.json({
+            success: true,
+            facility
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
- const getFacility = asyncHandler(async (req, res) => {
+export const createUpdateFacilityProfile = async (req, res) => {
+    try {
+        const { name, type, address, licenseNumber, services } = req.body;
+        const logoFile = req.file; // From multer
 
-  const facilityId = req.user?._id;
-  const facility = await Facility.findById(facilityId).select("-password");
-  res.status(200).json({
-    success: true,
-    facility,
-  });
-});
+        let facility = await FacilityProfile.findOne({ userId: req.user._id });
 
- export {
-    registerFacility,
-    generateAccessAndRefreshToken,
-    loginFacility,
-    logoutFacility,
-    getAllFacility,
-    getFacility
- }
+        // 🖼️ Handle logo upload
+        let logoUrl = facility?.logo;
+        if (logoFile) {
+            const uploadResult = await uploadOnCloudinary(logoFile.path, {
+                folder: `facilities/${req.user._id}/logo`
+            });
+            if (uploadResult.success) {
+                logoUrl = uploadResult.url;
+            }
+        }
+
+        if (facility) {
+            // Update
+            facility.name = name || facility.name;
+            facility.type = type || facility.type;
+            facility.address = address || facility.address;
+            facility.licenseNumber = licenseNumber || facility.licenseNumber;
+            facility.services = services || facility.services;
+            facility.logo = logoUrl;
+        } else {
+            // Create
+            facility = new FacilityProfile({
+                userId: req.user._id,
+                name,
+                type,
+                address,
+                licenseNumber,
+                services,
+                logo: logoUrl
+            });
+        }
+
+        const savedFacility = await facility.save();
+        await savedFacility.populate('doctors', 'fullName specialization');
+
+        res.json({
+            success: true,
+            message: 'Facility profile saved successfully',
+            facility: savedFacility
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const addDoctorToFacility = async (req, res) => {
+    try {
+        const { doctorId } = req.body;
+
+        // Verify doctor exists
+        const doctor = await DoctorProfile.findById(doctorId);
+        if (!doctor) {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+
+        // Get facility
+        const facility = await FacilityProfile.findOne({ userId: req.user._id });
+        if (!facility) {
+            return res.status(404).json({ error: 'Facility not found' });
+        }
+
+        // Add doctor to facility
+        doctor.facilityId = facility._id;
+        facility.doctors.push(doctorId);
+
+        await doctor.save();
+        await facility.save();
+
+        await facility.populate('doctors', 'fullName specialization');
+
+        res.json({
+            success: true,
+            message: 'Doctor added to facility successfully',
+            facility
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const removeDoctorFromFacility = async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+
+        const facility = await FacilityProfile.findOne({ userId: req.user._id });
+        if (!facility) {
+            return res.status(404).json({ error: 'Facility not found' });
+        }
+
+        // Remove from facility doctors array
+        facility.doctors = facility.doctors.filter(id => id.toString() !== doctorId);
+        
+        // Clear doctor's facility
+        await DoctorProfile.findByIdAndUpdate(doctorId, { facilityId: null });
+
+        await facility.save();
+
+        res.json({
+            success: true,
+            message: 'Doctor removed from facility',
+            facility
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getFacilityStats = async (req, res) => {
+    try {
+        const facility = await FacilityProfile.findOne({ userId: req.user._id })
+            .populate('doctors', 'fullName');
+
+        const stats = {
+            totalDoctors: facility.doctors.length,
+            services: facility.services.length,
+            rating: facility.rating || 0,
+            isVerified: facility.isVerified
+        };
+
+        res.json({
+            success: true,
+            stats,
+            facility
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getAllFacilityDoctors = async (req, res) => {
+    try {
+        const facility = await FacilityProfile.findOne({ userId: req.user._id })
+            .populate('doctors', 'fullName specialization consultationFee availability');
+
+        res.json({
+            success: true,
+            doctors: facility.doctors || []
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

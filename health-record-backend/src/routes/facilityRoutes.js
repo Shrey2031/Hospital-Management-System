@@ -1,14 +1,28 @@
+
 import { Router } from "express";
-import { FacilityverifyJWT } from '../middlware/auth.middleware.js';
-import { loginFacility, logoutFacility, registerFacility , getAllFacility, getFacility} from "../controllers/facility.controller.js";
+import multer from 'multer';
+import {
+  getFacilityProfile,
+  createUpdateFacilityProfile,
+  addDoctorToFacility,
+  removeDoctorFromFacility,
+  getFacilityStats,
+  getAllFacilityDoctors
+} from "../controllers/facility.controller.js";
+
+import { UserverifyJWT } from "../middleware/auth.middleware.js";
+import { authorizeRoles } from "../middleware/role.middleware.js";
+import { upload } from "../middleware/multer.middleware.js";
+
 const router = Router();
 
 
-router.route('/register/facility').post(registerFacility);
-router.route('/login/facility').post(loginFacility);
+router.get('/profile',UserverifyJWT ,authorizeRoles('facility'), getFacilityProfile);
+router.post('/profile', UserverifyJWT, authorizeRoles('facility'), upload.single('logo'), createUpdateFacilityProfile);
+router.post('/doctors', UserverifyJWT, authorizeRoles('facility'), addDoctorToFacility);
+router.delete('/doctors/:doctorId', UserverifyJWT, authorizeRoles('facility'), removeDoctorFromFacility);
+router.get('/stats', UserverifyJWT, authorizeRoles('facility'), getFacilityStats);
+router.get('/doctors', UserverifyJWT, authorizeRoles('facility'), getAllFacilityDoctors);
 
-router.route('/logout/facility').post(FacilityverifyJWT,logoutFacility);
-router.route('/facility/').get(FacilityverifyJWT,getAllFacility);
-router.route('/facility/me').get(FacilityverifyJWT,getFacility);
 
 export default router;

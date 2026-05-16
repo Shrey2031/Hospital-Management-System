@@ -2,67 +2,56 @@ import mongoose , {Schema} from "mongoose";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-const userSchema = new Schema({
 
-    fullname:{
-        type:String,
-        required:true
-      },
-      username:{
-        type:String,
-        required:true
-      },
-
-      password:{
-        type:String,
-        required:true
-      },
-      email:{
-        type:String,
-        required:true,
-        uniq:true,
-      },
-      role:{ 
-        type: String, 
-        default: 'User' 
-      },
-      
-      address:{
-        type:String,
-        required:true,
-      },
-      age:{
-        type:Number,
-        required:true,
-      },
-      bloodGroup:{
-        type:String,
-        enum:['A+','B+','B-','O+','O-','A-','AB+','AB-'],
-
-        required:true,
-      },
-      gender:{
-        type:String,
-        enum:['Male','Female','Other'],
-        required:true,
-      },
-      phone:{
-       type:Number,
-       required:true
-        
-      },
-      document:{
-        type:String,
-      },
-    
-      refreshToken:{
-        type:String,
-       }
-
-      
-
-},{timestamps:true}
-
+const userSchema = new Schema(
+  {
+    fullname: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    username:{
+      type:String,
+      required:true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+    },
+    role: {
+      type: String,
+      enum: ["patient", "doctor", "facility"],
+      required: true,
+    },
+    blockedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+    messagingSettings: {
+    muteNotifications: { type: Boolean, default: false },
+    messageSound: { type: Boolean, default: true },
+    typingIndicators: { type: Boolean, default: true }
+  },
+  avatar: {
+    type: String,
+    default: 'https://ui-avatars.com/api/?name=Patient&background=skyblue&color=fff'
+  },
+    lastLogin: Date,
+    lastSeen: { type: Date },
+     isActive: { type: Boolean, default: true },
+      isVerified: { type: Boolean, default: false },
+    refreshToken: String,
+  },
+  { timestamps: true }
 );
 
 userSchema.pre("save",async function (next) {
@@ -81,6 +70,7 @@ userSchema.methods.generateAccessToken = function(){
  return jwt.sign(
       {
           _id:this._id,
+          role:this.role,
           email: this.email,
           username: this.username, 
           // fullname:this.fullname   
@@ -96,6 +86,7 @@ userSchema.methods.generateRefreshToken = function(){
   return jwt.sign(
       {
           _id:this._id,
+          role:this.role,
       
           
       

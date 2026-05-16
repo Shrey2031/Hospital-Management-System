@@ -1,244 +1,231 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/apiError.js";
-import { ApiResponse } from "../utils/apiResponce.js";
-import {Doctor} from '../models/doctor.models.js';
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+// controllers/doctorController.js
+import { DoctorProfile } from '../models/doctorProfile.model.js';
+import { FacilityProfile } from '../models/FacilityProfile.js';
+import { PatientProfile } from '../models/patientProfile.model.js';
+import {MedicalRecord} from '../models/medicalRecord.model.js';
+import { Appointment } from '../models/appointment.models.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import { ApiError } from '../utils/apiError.js';
+import { ApiResponse } from '../utils/apiResponce.js';
+import { User } from '../models/users.models.js';
 
-const generateAccessAndRefreshToken = async(userId) =>{
+export const getDoctorProfile = async (req, res) => {
     try {
-       const user = await Doctor.findById(userId)
-       const accessToken = user.generateAccessToken()
-       const refreshToken = user.generateRefreshToken()
+        const doctor = await DoctorProfile.findOne({ userId: req.user._id })
+            .populate('facilityId', 'name address')
+            .select('-__v');
 
-       user.refreshToken = refreshToken;
-      await  user.save({validateBeforeSave: false})
-
-       return {accessToken,refreshToken}
-
-    } catch (error) {
-        throw new ApiError(500,'something went wrong while generating refresh and access token')
-    }
-}
-const registerDoctor = asyncHandler(async (req,resp) => {
-
-    const {fullname,email,password,gender,specialization,experienceInyears, workInHospital} = req.body;
-    console.log("email: ",email);
-
-     if(
-        [fullname,email,password].some((field) => field?.trim() === "" )
- 
-    ){
-              throw new ApiError (400,"all fields are mandatory")
-    }
-
-
-    const existedUser = await Doctor.findOne({
-      $or: [{ fullname: fullname }, { email: email }] 
-     })
- 
-     if(existedUser){
-         throw new  ApiError(409, "user with email and password already exist")
-     }
- 
-
-   const avatarLocalPath = req.files?.avatar[0]?.path;
-   if(!avatarLocalPath){
-
-        throw new  ApiError(400, "avtarlocalpath  file is required ")
-    }
-
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
-    if(!avatar){
-        throw new  ApiError(400, "avtar file is required ");
-
-    }
-    
- const user = await Doctor.create({
-         fullname,
-         email,
-         password,
-         gender,
-         experienceInyears,
-         specialization,
-          avatar: avatar.url,
-           workInHospital
-         
-     })
- 
-     const createdUser = await  Doctor.findById(user._id).select(
-         "-password -refreshToken"
-     )
- 
-     if(!createdUser){
-         throw new ApiError(500, "user not found")
-     }
- 
-     return resp.status(201).json(
-         new ApiResponse(200,createdUser,"user register successfully")
-     )
- 
- 
- 
- })
-
- const loginDoctor = asyncHandler(async(req,resp) => {
-   
-   const {email,password} = req.body;
-   
-   if(!email && !password){
-    throw new ApiError(400,'password or email is required')
-   }
-
-     const user = await Doctor.findOne({ email }).select("+password");
-   if (!user) {
-    return next(new ErrorHandler("Invalid Email Or Password!", 400));
-  }
-
-   if(!user){
-    throw new ApiError(404,'user does not exist')
-   }
-
-   const isPasswordValid = await user.isPasswordCorrect(password);
-   if(!isPasswordValid){
-    throw new ApiError(401,'invalid password')
-   }
-
-   const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user._id);
-
-   const loggedInUser = await Doctor.findById(user._id).select("-password -refreshToken");
-
-   const options = {
-    httpOnly: true,
-    secure: true
-
-   }
-
-   return resp.status(200)
-   .cookie("accessToken",accessToken,options)
-   .cookie("refreshToken",refreshToken,options)
-   .json(
-     new ApiResponse(
-        200,
-        {
-            user:loggedInUser,accessToken,refreshToken
-        },
-        "user login Successfully"
-     )
-   )
-   
-})
-
-const logoutDoctor = ( async (req,resp) => {
-    await  Doctor.findByIdAndUpdate(
-        req.user._id,
-        {
-            $unset:{
-                refreshToken: 1
-            }
-        },
-        {
-            new:true
+        if (!doctor) {
+            return res.status(404).json({ 
+                error: 'Doctor profile not found' 
+            });
         }
-    )
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    
-       }
-
-   return resp.status(200)
-    .clearCookie("accessToken",options)
-    .clearCookie("refreshToken",options)
-    .json(new ApiResponse(200,{},"user  logged Out"))
-
-})
-
-
-
-// Get all doctors
-const getAllDoctors = asyncHandler(async (req, res) => {
-  const doctors = await Doctor.find().select("-password");
-
-  res.status(200).json({
-    success: true,
-    count: doctors.length,
-    doctors,
-  });
-
-   
-});
-
-// Get a specific user by ID
-const getDoctorDetails = asyncHandler(async (req, res) => {
-
-  const doctor = req.user;
-  res.status(200).json({
-    success: true,
-    doctor,
-  });
-});
-
-const refreshAccessToken = asyncHandler(async (req,resp) => {
-    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
-
-    if(!incomingRefreshToken){
-        throw new ApiError(401,"unauthorized request")
+        res.json({
+            success: true,
+            doctor
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
+};
 
-   try {
-    const decodedToken =  jwt.verify(
-         incomingRefreshToken,
-         process.env.REFRESH_TOKEN_SECRET
- 
-     )
- 
-     const user = Doctor.findById(decodedToken?._id);
- 
-     if(!user){
-         throw new ApiError("invalid refreshToken")
-     }
- 
-     if(incomingRefreshToken !== user?.refreshToken){
-         throw new ApiError(401,"Refresh Token is expired or used")
-     }
- 
-     const options ={
-         httpOnly: true,
-         secure: true
-     }
- 
-    const {accessToken,newRefreshToken} = await generateAccessAndRefreshToken(user._id)
-    return resp.status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",newRefreshToken,options)
-    .json(
-     new ApiResponse(
-        200,
+export const createUpdateDoctorProfile = async (req, res) => {
+    try {
+        const { fullName, specialization, licenseNumber, experience, 
+                qualifications, consultationFee, availability } = req.body;
+
+        let doctor = await DoctorProfile.findOne({ userId: req.user._id });
+
+        if (doctor) {
+            // Update existing
+            doctor.fullName = fullName || doctor.fullName;
+            doctor.specialization = specialization || doctor.specialization;
+            doctor.licenseNumber = licenseNumber || doctor.licenseNumber;
+            doctor.experience = experience || doctor.experience;
+            doctor.qualifications = qualifications || doctor.qualifications;
+            doctor.consultationFee = consultationFee || doctor.consultationFee;
+            doctor.availability = availability || doctor.availability;
+        } else {
+            // Create new
+            doctor = new Doctor({
+                userId: req.user._id,
+                fullName,
+                specialization,
+                licenseNumber,
+                experience,
+                qualifications,
+                consultationFee,
+                availability
+            });
+        }
+
+        const savedDoctor = await doctor.save();
+        await savedDoctor.populate('facilityId', 'name address');
+
+        res.json({
+            success: true,
+            message: 'Doctor profile saved successfully',
+            doctor: savedDoctor
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getDoctorPatients = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '' } = req.query;
         
-            {accessToken, refreshToken:newRefreshToken},
-            "access Token refreshed"
-        
-        
-     )
-   )
-   } catch (error) {
-      throw new ApiError(401,error?.message || "Invalid refresh Token")
-   }
+        const patients = await Patient.find({
+            $or: [
+                { fullName: { $regex: search, $options: 'i' } }
+            ]
+        })
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .populate('userId', 'email phone')
+        .sort({ createdAt: -1 });
 
+        const total = await PatientProfile.countDocuments();
 
+        res.json({
+            success: true,
+            patients,
+            pagination: {
+                current: page,
+                pages: Math.ceil(total / limit),
+                total
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
-})
+export const getPatientRecords = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        const { page = 1, limit = 20, category } = req.query;
 
+        const filter = {
+            patientId,
+            'access.doctors': req.user._id // Doctor has access
+        };
 
+        if (category) filter.category = category;
 
+        const records = await MedicalRecord.find(filter)
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
 
- export {
-    registerDoctor,
-    generateAccessAndRefreshToken,
-    loginDoctor,
-    logoutDoctor,
-    getAllDoctors,
-    getDoctorDetails,
-    refreshAccessToken,
- }
+        const total = await MedicalRecord.countDocuments(filter);
+
+        res.json({
+            success: true,
+            records,
+            pagination: {
+                current: page,
+                pages: Math.ceil(total / limit),
+                total
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getDoctorAppointments = async (req, res) => {
+    try {
+        const { status, date } = req.query;
+        const filter = { doctorId: req.user._id };
+
+        if (status) filter.status = status;
+        if (date) filter['slot.date'] = { $gte: new Date(date), $lte: new Date(date) };
+
+        const appointments = await Appointment.find(filter)
+            .populate('patientId', 'fullName')
+            .populate('facilityId', 'name')
+            .sort({ 'slot.date': 1, 'slot.startTime': 1 });
+
+        res.json({
+            success: true,
+            appointments
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateAppointmentStatus = async (req, res) => {
+    try {
+        const { appointmentId } = req.params;
+        const { status } = req.body;
+
+        const appointment = await Appointment.findOneAndUpdate(
+            { _id: appointmentId, doctorId: req.user._id },
+            { status },
+            { new: true }
+        ).populate('patientId', 'fullName');
+
+        if (!appointment) {
+            return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        res.json({
+            success: true,
+            message: `Appointment status updated to ${status}`,
+            appointment
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// controllers/doctorController.js
+// export const getAvailableDoctors = async (req, res) => {
+//   try {
+//     const doctors = await User.find({ 
+//       role: 'doctor', 
+//       isActive: true // Add this field if you have it
+//     })
+//     .select('fullname email specialty phone profileImage')
+//     .sort({ fullname: 1 });
+
+//     res.status(200).json(new ApiResponse(200, 200, 'Doctors fetched', doctors));
+//   } catch (error) {
+//     res.status(500).json(new ApiError(500, 'Failed to fetch doctors'));
+//   }
+// };
+
+// controllers/doctorController.js - CORRECT VERSION
+export const getAvailableDoctors = async (req, res) => {
+  try {
+    // 🔥 FETCH REAL DOCTORS
+    const doctors = await User.find({ 
+      role: 'doctor' 
+    })
+    .select('fullname email specialty phone profileImage')
+    .sort({ fullname: 1 });
+
+    console.log('🔍 Found doctors:', doctors.length); // Debug
+
+    // 🔥 CORRECT RESPONSE - ARRAY OF DOCTORS
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Doctors fetched successfully',
+      data: doctors,  // ✅ ARRAY OF DOCTOR OBJECTS
+      count: doctors.length
+    });
+
+  } catch (error) {
+    console.error('Doctors error:', error);
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error.message
+    });
+  }
+};

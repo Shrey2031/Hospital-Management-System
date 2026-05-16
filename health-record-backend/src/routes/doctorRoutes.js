@@ -1,26 +1,31 @@
+
+
+
 import { Router } from "express";
-import {upload} from '../middlware/multer.middleware.js';
-import {DoctorverifyJWT} from '../middlware/auth.middleware.js';
-import { getAllDoctors, loginDoctor, registerDoctor,logoutDoctor,getDoctorDetails } from "../controllers/doctor.controller.js"
+import {
+  getPatientRecords,
+  getDoctorAppointments,
+  getDoctorPatients,
+  getDoctorProfile,
+  createUpdateDoctorProfile,
+  updateAppointmentStatus,
+  getAvailableDoctors
+} from "../controllers/doctor.controller.js";
+
+import { UserverifyJWT } from "../middleware/auth.middleware.js";
+import { authorizeRoles } from "../middleware/role.middleware.js";
 
 const router = Router();
 
+// Doctor create/update profile
 
-router.route('/register/doctor').post(upload.fields(
-     [
-        { name:"avatar",
-            maxCount:1
-        }
-    ]),registerDoctor);
-
-router.route('/login/doctor').post(loginDoctor);
-router.route('/doctor/').get(DoctorverifyJWT,getDoctorDetails);
-
-router.route('/doctor').get(DoctorverifyJWT,getAllDoctors);
-router.route('/logout/doctor').post(DoctorverifyJWT,logoutDoctor);
-
-
-
-
+router.get('/doctor-profile', UserverifyJWT, authorizeRoles('doctor'), getDoctorProfile);
+router.post('/profile', UserverifyJWT, authorizeRoles('doctor'), createUpdateDoctorProfile);
+router.get('/patients', UserverifyJWT, authorizeRoles('doctor'), getDoctorPatients);
+router.get('/patients/:patientId/records', UserverifyJWT, authorizeRoles('doctor'), getPatientRecords);
+router.get('/appointments', UserverifyJWT, authorizeRoles('doctor'), getDoctorAppointments);
+router.patch('/appointments/:appointmentId/status', UserverifyJWT, authorizeRoles('doctor'), updateAppointmentStatus);
+// routes/doctor.js (or user.js)
+router.get('/get-doctors', UserverifyJWT,  getAvailableDoctors);
 
 export default router;
