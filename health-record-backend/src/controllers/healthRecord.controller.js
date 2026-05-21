@@ -174,3 +174,94 @@ export const getRecordsStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// controllers/medicalRecordController.js - ADD THIS
+
+// ✅ NEW: Get records shared with a specific doctor
+export const getRecordsForDoctor = async (req, res) => {
+    try {
+        const doctorId = req.user._id;
+        const { page = 1, limit = 20, category, search } = req.query;
+
+        // Find records where this doctor is in the access list
+        const filter = {
+            'access.doctors': doctorId,
+            'access.expiresAt': { $gt: new Date() } // Not expired
+        };
+
+        if (category) filter.category = category;
+        if (search) filter.title = { $regex: search, $options: 'i' };
+
+        const records = await MedicalRecord.find(filter)
+            .populate('patientId', 'fullname email phone')
+            .populate('uploadedBy', 'fullname')
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const total = await MedicalRecord.countDocuments(filter);
+
+        // Get stats for dashboard
+        const stats = await MedicalRecord.aggregate([
+            { 
+                $match: { 
+                    'access.doctors': doctorId,
+                    'access.expiresAt': { $gt: new Date() }
+                } 
+            },
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Calculate stats
+        const readyCount = stats.find(s => s._id === 'ready')?.count || 0;
+        const processingCount = stats.find(s => s._id === 'processing')?.count || 0;
+
+        res.json({
+            success: true,
+            records,
+            stats: {
+                total,
+                ready: readyCount,
+                processing: processingCount,
+                pending: total - readyCount - processingCount
+            },
+            pagination: {
+                current: parseInt(page),
+                pages: Math.ceil(total / limit),
+                total
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// ✅ NEW: Get single record details
+export const getRecordDetails = async (req, res) => {
+    try {
+        const { recordId } = req.params;
+        const doctorId = req.user._id;
+
+        const record = await MedicalRecord.findOne({
+            _id: recordId,
+            'access.doctors': doctorId
+        })
+        .populate('patientId', 'fullname email phone')
+        .populate('uploadedBy', 'fullname');
+
+        if (!record) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+
+        res.json({
+            success: true,
+            record
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

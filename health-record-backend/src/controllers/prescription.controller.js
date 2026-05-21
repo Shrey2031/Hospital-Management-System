@@ -46,15 +46,42 @@ import {User} from '../models/users.models.js';
 //     }
 // };
 
+// export const getMyPrescriptions = async (req, res) => {
+//     try {
+//         const filter = req.user.role === 'PATIENT' 
+//             ? { patientId: req.user.patientId || req.user._id }
+//             : { doctorId: req.user._id };
+
+//         const prescriptions = await Prescription.find(filter)
+//             .populate('appointmentId', 'slot status')
+//             .populate('patientId', 'fullName')
+//             .sort({ createdAt: -1 });
+
+//         res.json({
+//             success: true,
+//             prescriptions
+//         });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
+// In prescriptionController.js - getMyPrescriptions
 export const getMyPrescriptions = async (req, res) => {
     try {
-        const filter = req.user.role === 'PATIENT' 
-            ? { patientId: req.user.patientId || req.user._id }
-            : { doctorId: req.user._id };
+        const filter = { doctorId: req.user._id };
 
         const prescriptions = await Prescription.find(filter)
-            .populate('appointmentId', 'slot status')
-            .populate('patientId', 'fullName')
+            .populate({
+                path: 'patientId',
+                select: 'fullname',
+                model: 'User'  // Use User model since your patients are Users
+            })
+            .populate({
+                path: 'appointmentId',
+                select: 'slot status',
+                model: 'Appointment'
+            })
             .sort({ createdAt: -1 });
 
         res.json({

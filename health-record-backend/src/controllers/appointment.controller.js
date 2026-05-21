@@ -298,6 +298,65 @@ export const getNextAppointment = async (req, res) => {
   }
 };
 
+// ADD THIS NEW CONTROLLER - Doctor's Today's Schedule
+// GET /api/appointment/schedule/today
+export const getDoctorTodaySchedule = async (req, res) => {
+  try {
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ error: 'Access denied. Doctors only.' });
+    }
+
+    const doctorId = req.user._id;
+    
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    const appointments = await Appointment.find({
+      doctorId: doctorId,
+      status: { $in: ['PENDING', 'CONFIRMED', 'COMPLETED'] },
+      'slot.date': {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    })
+    // ✅ EXACT SAME POPULATE as your getMyAppointments!
+    .populate({
+      path: 'doctorId',
+      select: 'fullname specialization email',
+      model: 'User'
+    })
+    .populate({
+      path: 'patientId',                    // ← Direct to User (like your controller)
+      select: 'fullname phone',             // ← fullname (not firstName!)
+      model: 'User'                         // ← Direct User model
+    })
+    .sort({ 'slot.startTime': 1 })
+    .lean();
+
+    // ✅ Use fullname (matches your User model)
+    const scheduleRows = appointments.map(appointment => ({
+      _id: appointment._id,
+      time: appointment.slot.startTime,
+      patient: appointment.patientId?.fullname || 'Unknown Patient', // ✅ fullname!
+      type: appointment.type === 'INPERSON' ? 'In-Person' : 
+            appointment.type === 'VIDEO' ? 'Video Call' : 'Phone Call',
+      status: appointment.status.toLowerCase(),
+      doctorName: appointment.doctorId?.fullname // Optional
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: scheduleRows.length,
+      data: scheduleRows
+    });
+
+  } catch (error) {
+    console.error('❌ Doctor schedule error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch schedule' });
+  }
+};
+
 // 2. STATS (for quick stats card)
 export const getAppointmentStats = async (req, res) => {
   try {
@@ -328,3 +387,29 @@ export const getAppointmentStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Doctor marks appointment COMPLETE
+export const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // "COMPLETED"
+
+    const appointment = await Appointment.findOneAndUpdate(
+      { 
+        _id: id, 
+        doctorId: req.user._id // Only doctor's own appointments
+      },
+      { status: status.toUpperCase() },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    res.json({ success: true, message: 'Status updated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

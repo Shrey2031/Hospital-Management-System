@@ -9,7 +9,9 @@ import {
   getDoctorProfile,
   createUpdateDoctorProfile,
   updateAppointmentStatus,
-  getAvailableDoctors
+  getAvailableDoctors,
+  getDoctorDashboardStats,
+  addNewPatient
 } from "../controllers/doctor.controller.js";
 
 import { UserverifyJWT } from "../middleware/auth.middleware.js";
@@ -27,5 +29,10 @@ router.get('/appointments', UserverifyJWT, authorizeRoles('doctor'), getDoctorAp
 router.patch('/appointments/:appointmentId/status', UserverifyJWT, authorizeRoles('doctor'), updateAppointmentStatus);
 // routes/doctor.js (or user.js)
 router.get('/get-doctors', UserverifyJWT,  getAvailableDoctors);
+// routes/doctor.js OR routes/appointment.js
+router.get('/dashboard/stats', UserverifyJWT,authorizeRoles('doctor'), getDoctorDashboardStats);
+// routes/doctor.routes.js
+router.post('/patients/add', UserverifyJWT,authorizeRoles('doctor'), addNewPatient);
+router.get('/patients', UserverifyJWT,authorizeRoles('doctor'), getDoctorPatients);
 
 export default router;

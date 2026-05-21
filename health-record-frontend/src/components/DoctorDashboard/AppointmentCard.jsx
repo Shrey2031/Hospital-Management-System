@@ -1,42 +1,4 @@
-// const AppointmentCard = () => {
-//   return (
-//     <div className="bg-[#07113d] rounded-3xl p-6">
-//       <div className="flex justify-between mb-6">
-//         <h2 className="text-2xl font-semibold">
-//           Upcoming Appointments
-//         </h2>
 
-//         <span className="text-blue-400">View all</span>
-//       </div>
-
-//       <div className="space-y-4">
-//         {[1, 2, 3].map((item) => (
-//           <div
-//             key={item}
-//             className="bg-white/5 p-4 rounded-2xl"
-//           >
-//             <h3 className="font-semibold">
-//               Sarah Johnson
-//             </h3>
-
-//             <p className="text-sm text-gray-400">
-//               Consultation
-//             </p>
-
-//             <div className="flex justify-between mt-2 text-sm">
-//               <span>09:00 AM</span>
-//               <span className="text-green-400">
-//                 Confirmed
-//               </span>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AppointmentCard;
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";

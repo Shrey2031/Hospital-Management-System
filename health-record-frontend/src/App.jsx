@@ -12,19 +12,25 @@ import AuthPage from './components/Auth/Auth1';
 import { AuthProvider } from './context/AuthContext';
 // import PatientDashboard from './components/Dashboard/PatientDashboard'
 // import DoctorDashboard from './components/Dashboard/DoctorDashboard';
-import Appointments from './components/Sidebar/Appointment';
+import Appointments from './components/PatientSidebar/Appointment';
 import FacilityDashboard from './components/Dashboard/FacilityDashboard';
 import DoctorDashboard from './components/Dashboard/Doctor1Dashboard';
 // import MedicalRecords from './pages/Sidebar/MedicalRecord';
-import MedicalRecords from './components/Sidebar/Myrecords';
+import MedicalRecords from './components/PatientSidebar/Myrecords';
 // import Messages from './pages/Sidebar/Message';
-import PatientDoctors from './pages/Sidebar/PatientDoctors';
+// import PatientDoctors from './pages/Sidebar/PatientDoctors';
 // import PatientPrescriptions from './pages/Sidebar/Prescription';
-import Prescriptions from './components/Sidebar/Prescription';
-import PatientAppointments from './pages/Sidebar/Appointments';
+import Prescriptions from './components/PatientSidebar/Prescription';
+// import PatientAppointments from './pages/Sidebar/Appointments';
 import PatientDashboard from './components/Dashboard/Patient1Dashboard';
-import MessagesPage from './components/Sidebar/Message';
-import SettingsPage from './components/Sidebar/Setting';
+import MessagesPage from './components/PatientSidebar/Message';
+import SettingsPage from './components/PatientSidebar/Setting';
+import AppointmentPage from './components/DoctorSidebar/Appointments';
+import PatientsPage from './components/DoctorSidebar/Patients';
+import MedicalReportsPage from './components/DoctorSidebar/MedicalRecord';
+import PrescriptionsPage from './components/DoctorSidebar/Prescription';
+import Messages from './components/DoctorSidebar/Messages';
+import DoctorSettingsPage from './components/DoctorSidebar/Profile';
 const queryClient = new QueryClient();
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -50,6 +56,14 @@ return (
               <Route path="/prescriptions" element={<Prescriptions />} />
               <Route path="/appointments" element={<Appointments />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/doctor-appointments" element={<AppointmentPage />} />
+              <Route path="/doctor-patients" element={<PatientsPage />} />
+              <Route path="/doctor-medical-records" element={<MedicalReportsPage />} />
+              <Route path="/doctor-prescriptions" element={<PrescriptionsPage />} />
+              <Route path="/doctor-messages" element={<Messages />} />
+              <Route path="/doctor-settings" element={<DoctorSettingsPage />} />
+
+
 
               
             {/* 🔥 PATIENT ROUTES */}

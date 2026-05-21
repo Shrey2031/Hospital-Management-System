@@ -37,6 +37,10 @@ const doctorSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    patients: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User'  // References User (patients)
+}],
 
     availability: [
       {

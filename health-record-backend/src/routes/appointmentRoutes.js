@@ -8,7 +8,10 @@ import {
     getAvailableSlots,
     cancelAppointment,
     getAppointmentStats,
-    getNextAppointment
+    getNextAppointment,
+    getDoctorTodaySchedule,
+    updateAppointmentStatus
+
     
  } from "../controllers/appointment.controller.js";
 import { UserverifyJWT } from "../middleware/auth.middleware.js";
@@ -22,5 +25,10 @@ router.delete('/:appointmentId/cancel', UserverifyJWT, cancelAppointment);
 router.get('/slots', UserverifyJWT, getAvailableSlots);
 router.get('/stats', UserverifyJWT, getAppointmentStats);
 router.get('/next', UserverifyJWT, getNextAppointment);
+// In your appointment routes file
+router.get('/schedule/today', UserverifyJWT, getDoctorTodaySchedule);
+router.put('/:id/status',UserverifyJWT,updateAppointmentStatus)
+
+// Route: PUT /api/appointment/:id/status
 
 export default router;
