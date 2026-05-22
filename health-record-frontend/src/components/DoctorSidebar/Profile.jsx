@@ -35,7 +35,8 @@ export default function DoctorSettingsPage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const fileInputRef = React.useRef(null);
 
-  const API_BASE_URL = 'http://localhost:3000/api/v1';
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   // 🔥 Fetch doctor profile details
   const profileQuery = useQuery({

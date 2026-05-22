@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
@@ -35,7 +33,9 @@ export default function SettingsPage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const fileInputRef = React.useRef(null);
 
-  const API_BASE_URL = 'http://localhost:3000/api/v1';
+  
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   // 🔥 Fetch profile details
   const profileQuery = useQuery({

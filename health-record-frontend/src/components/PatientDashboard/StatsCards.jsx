@@ -1,51 +1,3 @@
-// const cards = [
-//   {
-//     title: "Total Records",
-//     value: "12",
-//     color: "from-green-500 to-teal-600",
-//   },
-//   {
-//     title: "Appointments",
-//     value: "2",
-//     color: "from-blue-500 to-indigo-600",
-//   },
-//   {
-//     title: "Lab Reports",
-//     value: "5",
-//     color: "from-orange-500 to-red-500",
-//   },
-//   {
-//     title: "Medications",
-//     value: "3",
-//     color: "from-purple-500 to-pink-500",
-//   },
-// ];
-
-// const StatsCards = () => {
-//   return (
-//     <div className="grid grid-cols-4 gap-5">
-//       {cards.map((card, index) => (
-//         <div
-//           key={index}
-//           className={`bg-gradient-to-r ${card.color} rounded-3xl p-6 text-white`}
-//         >
-//           <h1 className="text-5xl font-bold">
-//             {card.value}
-//           </h1>
-
-//           <p className="mt-3 text-lg">{card.title}</p>
-
-//           <button className="mt-5 text-sm">
-//             View all →
-//           </button>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default StatsCards;
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
@@ -54,10 +6,12 @@ import { toast } from 'react-hot-toast';
 
 const StatsCards = () => {
   const { user, token, loading: authLoading } = useAuth();
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   const statsQuery = useQuery({
     queryKey: ['patient-stats-card', user?._id],
-    queryFn: () => axios.get(`http://localhost:3000/api/v1/users/patient/stats`, {
+    queryFn: () => axios.get(`${API_BASE_URL}/users/patient/stats`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => res.data),
     enabled: !!user?._id && !!token && !authLoading,

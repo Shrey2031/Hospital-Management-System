@@ -1,220 +1,3 @@
-// import React, { createContext, useState, useEffect, useContext } from 'react';
-// import axios from 'axios';
-// import { useNavigate } from 'react-router-dom';
-// import { toast } from 'react-hot-toast';
-
-
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const navigate = useNavigate();
-//   useEffect(() => {
-//     const initAuth = async () => {
-//       if (!token) {
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         // ✅ Verify token with API
-//         const response = await axios.get('http://localhost:3000/api/v1/users/me', {
-//           headers: { Authorization: `Bearer ${token}` }
-//         });
-        
-//         setUser(response.data.user);
-//         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-//       } catch (error) {
-//         // ✅ Token invalid → Clear storage
-//         localStorage.removeItem('token');
-//         localStorage.removeItem('user');
-//         setToken(null);
-//         setUser(null);
-//         delete axios.defaults.headers.common['Authorization'];
-//       } finally {
-//         setLoading(false); // ✅ Always stop loading
-//       }
-//     };
-
-//     initAuth();
-//   }, []);
-
-//   const login = async (credentials) => {
-//   try {
-//     console.log('🔐 LOGIN:', credentials.email);
-    
-//     const res = await axios.post('http://localhost:3000/api/v1/users/login', credentials);
-//     console.log('✅ FULL RESPONSE:', res.data);
-    
-//     // 🔥 FIXED: Correct path for YOUR backend response
-//     const accessToken = res.data.data?.accessToken;
-    
-//     if (!accessToken) {
-//       throw new Error('No accessToken in response. Got: ' + JSON.stringify(res.data));
-//     }
-    
-//     console.log('🔑 ACCESS TOKEN FOUND:', accessToken.substring(0, 20) + '...');
-    
-//     // 🔥 SAVE ACCESS TOKEN
-//     localStorage.setItem('token', accessToken);
-//     localStorage.setItem('accessToken', accessToken); // Backup
-    
-//     // 🔥 SET AXIOS HEADERS
-//     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    
-//     // 🔥 SET STATE
-//     setToken(accessToken);
-//     setUser(res.data.data.user);
-    
-//     console.log('💾 TOKEN SAVED!');
-//     console.log('👤 USER:', res.data.data.user);
-    
-//     toast.success('Login successful!');
-//     navigate('/dashboard');
-    
-//   } catch (error) {
-//     console.error('❌ LOGIN ERROR:', error.response?.data || error.message);
-//     toast.error('Login failed: ' + (error.response?.data?.message || error.message));
-//     throw error;
-//   }
-// };
-
-  
-//   const logout = () => {
-//     localStorage.removeItem('token');
-//     delete axios.defaults.headers.common['Authorization'];
-//     setUser(null);
-//     setToken(null);
-//     navigate('/');
-//   };
-
-//   const value = { user, token, login, logout, loading };
-
-//   return (
-//     <AuthContext.Provider value={value}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// src/context/AuthContext.jsx
-// import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-// import axios from 'axios';
-// import { useNavigate } from 'react-router-dom';
-// import { toast } from 'react-hot-toast';
-
-// const AuthContext = createContext();
-
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within AuthProvider');
-//   }
-//   return context;
-// };
-
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const navigate = useNavigate();
-
-//   // 🔥 REFRESH TOKEN VALIDATION
-//   useEffect(() => {
-//     const validateToken = async () => {
-//       const storedToken = localStorage.getItem('token') || localStorage.getItem('accessToken');
-      
-//       console.log('🔍 Token check:', !!storedToken);
-      
-//       if (!storedToken) {
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-//         setToken(storedToken);
-
-//         const response = await axios.get('http://localhost:3000/api/v1/users/me', {
-//           timeout: 5000
-//         });
-        
-//         console.log('✅ Auth validated:', response.data);
-//         setUser(response.data.data?.user || response.data.user);
-//       } catch (error) {
-//         console.error('❌ Token invalid:', error.response?.status);
-//         localStorage.removeItem('token');
-//         localStorage.removeItem('accessToken');
-//         setToken(null);
-//         setUser(null);
-//         delete axios.defaults.headers.common['Authorization'];
-//       } finally {
-//         setLoading(false);  // ✅ CRITICAL
-//       }
-//     };
-
-//     validateToken();
-//   }, []);
-
-//   // 🔥 LOGIN FUNCTION
-//   const login = async (credentials) => {
-//     try {
-//       console.log('🔐 Logging in:', credentials.email);
-      
-//       const res = await axios.post('http://localhost:3000/api/v1/users/login', credentials);
-//       console.log('✅ Login response:', res.data);
-      
-//       const accessToken = res.data.data?.accessToken;
-      
-//       if (!accessToken) {
-//         throw new Error('No accessToken in response');
-//       }
-      
-//       // 🔥 PERSIST TOKEN
-//       localStorage.setItem('token', accessToken);
-//       localStorage.setItem('accessToken', accessToken);
-      
-//       // 🔥 SET HEADERS & STATE
-//       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-//       setToken(accessToken);
-//       setUser(res.data.data.user);
-      
-//       toast.success('Welcome back!');
-//       return { success: true };
-//     } catch (error) {
-//       const message = error.response?.data?.message || 'Login failed';
-//       toast.error(message);
-//       return { success: false, error: message };
-//     }
-//   };
-
-//   // 🔥 LOGOUT
-//   const logout = useCallback(() => {
-//     localStorage.clear();
-//     setToken(null);
-//     setUser(null);
-//     delete axios.defaults.headers.common['Authorization'];
-//     navigate('/login');
-//     toast.success('Logged out');
-//   }, [navigate]);
-
-//   const value = {
-//     user,
-//     token,
-//     loading,
-//     login,
-//     logout
-//   };
-
-//   return (
-//     <AuthContext.Provider value={value}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// export default AuthContext;  // ✅ Default export too
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -235,6 +18,9 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1/users`;
+
 
   // 🔥 IMPROVED TOKEN VALIDATION WITH BETTER ERROR HANDLING
   useEffect(() => {
@@ -257,7 +43,7 @@ const validateToken = async () => {
     setToken(storedToken); // 🔥 IMMEDIATE
     console.log('✅ Token set:', !!storedToken);
 
-    const response = await axios.get('http://localhost:3000/api/v1/users/me', {
+    const response = await axios.get(`${API_BASE_URL}/me`, {
       timeout: 10000
     });
     
@@ -302,40 +88,12 @@ const validateToken = async () => {
     validateToken();
   }, []);
 
-  // const login = async (credentials) => {
-  //   try {
-  //     console.log('🔐 Logging in:', credentials.email);
-      
-  //     const res = await axios.post('http://localhost:3000/api/v1/users/login', credentials, {
-  //       timeout: 10000
-  //     });
-      
-  //     const accessToken = res.data.data?.accessToken;
-      
-  //     if (!accessToken) {
-  //       throw new Error('No accessToken in response');
-  //     }
-      
-  //     localStorage.setItem('token', accessToken);
-  //     localStorage.setItem('accessToken', accessToken);
-      
-  //     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-  //     setToken(accessToken);
-  //     setUser(res.data.data.user);
-      
-  //     toast.success('Welcome back!');
-  //     return { success: true };
-  //   } catch (error) {
-  //     const message = error.response?.data?.message || 'Login failed';
-  //     toast.error(message);
-  //     return { success: false, error: message };
-  //   }
-  // };
+
 
   const login = async (credentials) => {
   try {
-    const res = await axios.post('http://localhost:3000/api/v1/users/login', credentials);
-    
+    const res = await axios.post(`${API_BASE_URL}/login`, credentials);
+
     const { accessToken, refreshToken } = res.data.data;
     
     // 🔥 STORE BOTH TOKENS
@@ -364,7 +122,7 @@ const refreshAuth = async () => {
     
     console.log('🔄 Refreshing tokens...');
     
-    const res = await axios.post('http://localhost:3000/api/v1/users/refresh', {
+    const res = await axios.post(`${API_BASE_URL}/refresh`, {
       refreshToken
     });
     

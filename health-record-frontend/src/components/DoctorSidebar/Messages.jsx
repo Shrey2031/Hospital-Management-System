@@ -22,7 +22,8 @@ export default function Messages() {
   const [typingTimeout, setTypingTimeout] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const API_BASE_URL = 'http://localhost:3000/api/v1/messages';
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1/messages`;
+
   const conversationsQuery = useQuery({
     queryKey: ['conversations', user?._id, search],
     queryFn: () => axios.get(`${API_BASE_URL}/conversations`, {

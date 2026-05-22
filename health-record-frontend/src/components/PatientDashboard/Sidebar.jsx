@@ -1,90 +1,6 @@
-// import {
-//   FaHome,
-//   FaFileMedical,
-//   FaCalendarAlt,
-//   FaPrescriptionBottleAlt,
-//   FaFlask,
-//   FaHeartbeat,
-//   FaFile,
-//   FaMoneyBill,
-//   FaEnvelope,
-//   FaCog,
-// } from "react-icons/fa";
-
-// const Sidebar = () => {
-//   const menus = [
-//     "Dashboard",
-//     "My Records",
-//     "Appointments",
-//     "Prescriptions",
-//     "Health Summary",
-//     "Billing",
-//     "Messages",
-//     "Settings",
-//   ];
-
-//   const icons = [
-//     <FaHome />,
-//     <FaFileMedical />,
-//     <FaCalendarAlt />,
-//     <FaPrescriptionBottleAlt />,
-//     <FaFlask />,
-//     <FaHeartbeat />,
-//     <FaFile />,
-//     <FaFile />,
-//     <FaMoneyBill />,
-//     <FaEnvelope />,
-//     <FaCog />,
-//   ];
-
-//   return (
-//     <div className="w-[250px] bg-[#020b36] text-white min-h-screen p-5 flex flex-col justify-between">
-//       <div>
-//         <div className="mb-10">
-//           <h1 className="text-3xl font-bold text-blue-400">
-//             MediCare+
-//           </h1>
-//           <p className="text-gray-400 text-sm">
-//             Health Records
-//           </p>
-//         </div>
-
-//         <div className="space-y-3">
-//           {menus.map((menu, index) => (
-//             <div
-//               key={index}
-//               className={`flex items-center gap-4 px-4 py-4 rounded-2xl cursor-pointer transition ${
-//                 index === 0
-//                   ? "bg-gradient-to-r from-blue-600 to-purple-600"
-//                   : "hover:bg-white/10"
-//               }`}
-//             >
-//               {icons[index]}
-//               <span>{menu}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       <div className="bg-gradient-to-br from-[#2c1b75] to-[#6b46ff] p-5 rounded-3xl">
-//         <h2 className="text-2xl font-bold">Need Help?</h2>
-
-//         <p className="text-gray-300 mt-2 text-sm">
-//           Our support team is here to help you
-//         </p>
-
-//         <button className="mt-5 bg-white text-black w-full py-3 rounded-xl font-semibold">
-//           Contact Support
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Sidebar;
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import logo from '../../images/icon.avif'
 import {
   FaHome,
   FaFileMedical,
@@ -96,6 +12,7 @@ import {
   FaMoneyBill,
   FaEnvelope,
   FaCog,
+  
 } from "react-icons/fa";
 
 const Sidebar = () => {
@@ -121,14 +38,26 @@ const Sidebar = () => {
   return (
     <div className="w-[250px] bg-[#020b36] text-white min-h-screen p-5 flex flex-col justify-between">
       <div>
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-blue-400">
-            MediCare+
-          </h1>
-          <p className="text-gray-400 text-sm">
-            Health Records
-          </p>
-        </div>
+
+        <div className="flex items-center gap-3 mb-10">
+  
+  
+  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+  <FaHeartbeat className="text-white text-3xl" />
+</div>
+
+  {/* TEXT */}
+  <div>
+    <h1 className="text-3xl font-bold text-white leading-none">
+      MediCare+
+    </h1>
+
+    <p className="text-gray-400 text-sm mt-1">
+      Health Records
+    </p>
+  </div>
+
+</div>
 
         <div className="space-y-3">
           {menus.map((menu, index) => (
@@ -177,3 +106,5 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
+

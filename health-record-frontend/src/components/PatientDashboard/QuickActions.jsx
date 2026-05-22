@@ -1,33 +1,3 @@
-// const QuickActions = () => {
-//   return (
-//     <div className="bg-[#09153d] rounded-3xl p-6 text-white">
-//       <h2 className="text-3xl font-bold mb-6">
-//         Quick Actions
-//       </h2>
-
-//       <div className="grid grid-cols-4 gap-5">
-//         <div className="bg-white/10 p-5 rounded-2xl">
-//           Upload Records
-//         </div>
-
-//         <div className="bg-white/10 p-5 rounded-2xl">
-//           Book Appointment
-//         </div>
-
-//         <div className="bg-white/10 p-5 rounded-2xl">
-//           View Reports
-//         </div>
-
-//         <div className="bg-white/10 p-5 rounded-2xl">
-//           Prescriptions
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default QuickActions;
-
 import { useNavigate } from 'react-router-dom';
 import { 
   UploadCloud, 

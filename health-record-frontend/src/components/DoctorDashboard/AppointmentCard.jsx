@@ -1,5 +1,3 @@
-
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -8,7 +6,9 @@ import { useAuth } from "../../context/AuthContext";
 const AppointmentCard = () => {
   const { token } = useAuth();
 
-  const API_BASE_URL = "http://localhost:3000/api/v1";
+  
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   // ✅ Fetch doctor appointments
   const { data, isLoading, error } = useQuery({

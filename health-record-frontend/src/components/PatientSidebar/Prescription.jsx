@@ -12,7 +12,9 @@ export default function PrescriptionsPage() {
   const { user, token } = useAuth();
   const [search, setSearch] = useState('');
 
-  const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   // 🔥 1. MAIN PRESCRIPTIONS + STATS (your existing endpoint)
   const prescriptionsQuery = useQuery({

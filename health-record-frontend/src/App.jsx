@@ -31,9 +31,13 @@ import MedicalReportsPage from './components/DoctorSidebar/MedicalRecord';
 import PrescriptionsPage from './components/DoctorSidebar/Prescription';
 import Messages from './components/DoctorSidebar/Messages';
 import DoctorSettingsPage from './components/DoctorSidebar/Profile';
+import FacilityPatientsPage from './components/FacilitySidebar/Patients';
 const queryClient = new QueryClient();
 
 import ProtectedRoute from './components/ProtectedRoute';
+import FacilityAppointmentsPage from './components/FacilitySidebar/Appointments';
+import FacilityDepartmentsPage from './components/FacilitySidebar/Departments';
+import FacilityStaffPage from './components/FacilitySidebar/Staff';
 
 const App = () => {
   
@@ -62,6 +66,14 @@ return (
               <Route path="/doctor-prescriptions" element={<PrescriptionsPage />} />
               <Route path="/doctor-messages" element={<Messages />} />
               <Route path="/doctor-settings" element={<DoctorSettingsPage />} />
+              <Route path="/facility-patients" element={<FacilityPatientsPage />} />
+              <Route path="/facility-appointments" element={<FacilityAppointmentsPage />} />
+              <Route path="/facility-departments" element={<FacilityDepartmentsPage />} />
+              <Route path="/facility-staff" element={<FacilityStaffPage />} />
+
+              
+
+              
 
 
 

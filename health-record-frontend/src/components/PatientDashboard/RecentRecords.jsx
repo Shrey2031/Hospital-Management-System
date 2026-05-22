@@ -1,58 +1,3 @@
-// const RecentRecords = () => {
-//   return (
-//     <div className="bg-[#09153d] text-white rounded-3xl p-8">
-//       <div className="flex justify-between mb-8">
-//         <h2 className="text-3xl font-bold">
-//           Recent Records
-//         </h2>
-
-//         <button>View all</button>
-//       </div>
-
-//       <table className="w-full">
-//         <thead className="text-left text-gray-400">
-//           <tr>
-//             <th className="pb-4">Record Name</th>
-//             <th>Type</th>
-//             <th>Date</th>
-//             <th>Provider</th>
-//             <th>Action</th>
-//           </tr>
-//         </thead>
-
-//         <tbody>
-//           <tr className="border-t border-white/10">
-//             <td className="py-5">Blood Test Report</td>
-//             <td>Lab Report</td>
-//             <td>May 18, 2024</td>
-//             <td>City Lab</td>
-//             <td>⬇</td>
-//           </tr>
-
-//           <tr className="border-t border-white/10">
-//             <td className="py-5">Chest X-Ray</td>
-//             <td>Imaging</td>
-//             <td>May 10, 2024</td>
-//             <td>City Hospital</td>
-//             <td>⬇</td>
-//           </tr>
-
-//           <tr className="border-t border-white/10">
-//             <td className="py-5">
-//               General Checkup Summary
-//             </td>
-//             <td>Visit Summary</td>
-//             <td>Apr 30, 2024</td>
-//             <td>City Clinic</td>
-//             <td>⬇</td>
-//           </tr>
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// };
-
-// export default RecentRecords;
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -64,10 +9,12 @@ import { Download, FileText, Calendar, Eye } from 'lucide-react';
 
 const RecentRecords = () => {
   const { user, token, loading: authLoading } = useAuth();
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+
 
   const recordsQuery = useQuery({
     queryKey: ['patient-records', user?._id],
-    queryFn: () => axios.get(`http://localhost:3000/api/v1/records/my/`, {
+    queryFn: () => axios.get(`${API_BASE_URL}/records/my/`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => res.data),
     enabled: !!user?._id && !!token && !authLoading,
