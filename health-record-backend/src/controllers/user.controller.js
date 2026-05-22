@@ -4,7 +4,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/users.models.js";
 import { ApiResponse } from "../utils/apiResponce.js";
 import { Appointment } from "../models/appointment.models.js";
-import {Prescription}  from "../models/prescription.model.js";
+import {Prescription}  from "../models/Prescription.model.js";
 import { PatientProfile } from "../models/patientProfile.model.js";
 import { DoctorProfile } from "../models/doctorProfile.model.js";
 import { MedicalRecord } from "../models/medicalRecord.model.js";
