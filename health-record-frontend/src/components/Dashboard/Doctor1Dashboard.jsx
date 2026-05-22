@@ -4,10 +4,10 @@ import Header from "../../components/DoctorDashboard/Header";
 import OverviewCard from "../../components/DoctorDashboard/OverviewCard";
 import StatsCards from "../../components/DoctorDashboard/StatsCard";
 import ScheduleTable from "../../components/DoctorDashboard/ScheduleTable";
-import ProfileCard from "../../components/doctorDashboard/ProfileCard";
-import AppointmentCard from "../../components/doctorDashboard/AppointmentCard";
-import QuickActions from "../../components/doctorDashboard/QuickActions";
-import AlertsCard from "../../components/doctorDashboard/AlertsCard";
+import ProfileCard from "../../components/DoctorDashboard/ProfileCard";
+import AppointmentCard from "../../components/DoctorDashboard/AppointmentCard";
+import QuickActions from "../../components/DoctorDashboard/QuickActions";
+import AlertsCard from "../../components/DoctorDashboard/AlertsCard";
 
 const DoctorDashboard = () => {
   return (
