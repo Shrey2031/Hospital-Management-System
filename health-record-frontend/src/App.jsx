@@ -53,7 +53,7 @@ return (
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/Auth" element={<AuthPage />} />
-              {/* <Route path="/patient-dashboard" element={<PatientDashboard/>} /> */}
+              <Route path="/patient-dashboard" element={<PatientDashboard/>} />
               <Route path="/records" element={<MedicalRecords />} />
               <Route path="/messages" element={<MessagesPage />} />
               {/* <Route path="/my-doctors" element={<PatientDoctors />} /> */}

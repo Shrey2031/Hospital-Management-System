@@ -1,62 +1,49 @@
-const Footer = () => {
+import { useNavigate } from 'react-router-dom';
+import { Heart } from 'lucide-react';
+import { Wrap } from './Shared';
+
+// 'auth' links send visitors to the login/register page. The '#' links under
+// Support are placeholders: point them at real pages once they exist.
+const cols = [
+  ['Product', [['Features', '#features'], ['For Patients', '#for-patients'], ['For Doctors', '#for-doctors'], ['For Facilities', '#for-facilities'], ['How It Works', '#how-it-works']]],
+  ['Patients', [['Medical records', 'auth'], ['Appointments', 'auth'], ['Prescriptions', 'auth'], ['Messages', 'auth']]],
+  ['Doctors', [['Dashboard', 'auth'], ['Patient records', 'auth'], ['Prescriptions', 'auth'], ['Secure chat', 'auth']]],
+  ['Support', [['Help Center', '#'], ['Contact', '#'], ['Privacy Policy', '#'], ['Terms of Service', '#']]],
+];
+
+export default function Footer() {
+  const navigate = useNavigate();
   return (
-    <footer className="bg-[#020B2D] border-t border-blue-900 py-12">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row justify-between gap-10">
-        <div>
-          <h1 className="text-3xl font-bold text-blue-400">
-            MediCare+
-          </h1>
-
-          <p className="text-gray-400 mt-4 max-w-md">
-            Secure digital healthcare platform for patients,
-            doctors, and medical facilities.
-          </p>
+    <footer className="border-t border-[var(--mc-line)] pt-16">
+      <Wrap>
+        <div className="grid gap-12 lg:grid-cols-6">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--mc-teal)]"><Heart size={17} className="text-white" strokeWidth={2.5} /></span>
+              <span className="font-serif text-xl font-semibold">MediCare<span className="text-[var(--mc-teal)]">+</span></span>
+            </div>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--mc-muted)]">A digital health record platform for patients, doctors and medical facilities.</p>
+          </div>
+          {cols.map(([title, links]) => (
+            <div key={title}>
+              <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--mc-ink)]">{title}</p>
+              <ul className="space-y-2.5 text-sm text-[var(--mc-muted)]">
+                {links.map(([label, href]) => (
+                  <li key={label}>
+                    {href === 'auth'
+                      ? <button onClick={() => navigate('/Auth')} className="transition-colors hover:text-[var(--mc-teal)]">{label}</button>
+                      : <a href={href} className="transition-colors hover:text-[var(--mc-teal)]">{label}</a>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
-          <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>About</li>
-              <li>Features</li>
-              <li>Pricing</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Patients</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Records</li>
-              <li>Appointments</li>
-              <li>Reports</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Doctors</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Dashboard</li>
-              <li>Prescriptions</li>
-              <li>Patients</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Support</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>Help Center</li>
-              <li>Privacy</li>
-              <li>Contact</li>
-            </ul>
-          </div>
+        <div className="mt-14 flex flex-col justify-between gap-3 border-t border-[var(--mc-line)] py-6 text-xs text-[var(--mc-muted)] sm:flex-row">
+          <p>© {new Date().getFullYear()} MediCare+. All rights reserved.</p>
+          <p>Privacy Policy · Terms of Service</p>
         </div>
-      </div>
-
-      <div className="text-center text-gray-500 mt-12">
-        © 2026 MediCare+. All rights reserved.
-      </div>
+      </Wrap>
     </footer>
   );
-};
-
-export default Footer;
+}
