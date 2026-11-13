@@ -2,7 +2,7 @@ import express from "express";
 import  {authorizeRoles}  from '../middleware/role.middleware.js';
 import {
   createPrescription,
-  getMyPrescriptions,
+  // getMyPrescriptions,
   getPatientPrescriptions,
   getPrescriptionStats,
   requestRefill,
@@ -31,6 +31,6 @@ router.post('/patient/refill', UserverifyJWT, authorizeRoles('patient'), request
 router.get('/patient/:id/download', UserverifyJWT, authorizeRoles('patient'), downloadPrescription);
 
 // OLD: Get all my prescriptions (works for both)
-router.get('/my', UserverifyJWT, getMyPrescriptions);
+// router.get('/my', UserverifyJWT, getMyPrescriptions);
 
 export default router;

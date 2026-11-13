@@ -43,7 +43,7 @@ import {
   logoutUser,
   getUserDetails,
   getPatientStats,
-  fixBrokenAppointments,
+  // fixBrokenAppointments,
   generateAccessAndRefreshToken,
   getPatientDoctors
 } from "../controllers/user.controller.js";
@@ -52,7 +52,7 @@ import { UserverifyJWT } from "../middleware/auth.middleware.js";
 const router = Router();
 
 router.post("/register", registerUser);
-router.get("/doctors", UserverifyJWT, getPatientDoctors); // 👈 NEW ROUTE
+router.get("/doctors", UserverifyJWT, getPatientDoctors); 
 router.post("/login", loginUser);
 
 router.post("/logout", UserverifyJWT, logoutUser);
@@ -60,6 +60,6 @@ router.get('/patient/stats', UserverifyJWT, getPatientStats);
 router.get("/me", UserverifyJWT, getUserDetails);
 router.post("/refresh-token", generateAccessAndRefreshToken);
 // routes/appointments.js
-router.post('/fix-broken', UserverifyJWT, fixBrokenAppointments);
+// router.post('/fix-broken', UserverifyJWT, fixBrokenAppointments);
 
 export default router;

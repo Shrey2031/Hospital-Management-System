@@ -1,408 +1,226 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/users.models.js";
 import { ApiResponse } from "../utils/apiResponce.js";
 import { Appointment } from "../models/appointment.models.js";
-import {Prescription}  from "../models/Prescription.model.js";
-import { PatientProfile } from "../models/patientProfile.model.js";
-import { DoctorProfile } from "../models/doctorProfile.model.js";
+import { Prescription } from "../models/Prescription.model.js";
 import { MedicalRecord } from "../models/medicalRecord.model.js";
-import mongoose from "mongoose";
 
-
-
-const generateAccessAndRefreshToken = async(userId) =>{
+const generateAccessAndRefreshToken = async (userId) => {
     try {
-       const user = await User.findById(userId)
-       const accessToken = user.generateAccessToken()
-       const refreshToken = user.generateRefreshToken()
+        const user = await User.findById(userId);
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
 
-       user.refreshToken = refreshToken;
-      await  user.save({validateBeforeSave: false})
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false });
 
-       return {accessToken,refreshToken}
-
+        return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiError(500,'something went wrong while generating refresh and access token')
+        throw new ApiError(500, 'something went wrong while generating refresh and access token');
     }
-}
-const registerUser = asyncHandler(async (req,resp) => {
+};
 
-    const {fullname,username,email,password,phone,role} = req.body;
- 
-    if(
-        [fullname,username,email,password].some((field) => field?.trim() === "" )
- 
-    ){
-              throw new ApiError (400,"all fields are mandatory")
+const registerUser = asyncHandler(async (req, resp) => {
+    const { fullname, username, email, password, phone, role } = req.body;
+
+    // Was `field?.trim() === ""` — a field that's MISSING entirely (not
+    // just empty) makes `field?.trim()` return undefined, and
+    // `undefined === ""` is false, so a completely omitted password (say)
+    // passed this check silently. `!field?.trim()` catches both cases.
+    if ([fullname, username, email, password].some((field) => !field?.trim())) {
+        throw new ApiError(400, "all fields are mandatory");
     }
- 
+
     const existedUser = await User.findOne({
-      $or: [{ username: username }, { email: email }]
-     })
- 
-     if(existedUser){
-         throw new  ApiError(409, "user with email and password already exist")
-     }
+        $or: [{ username }, { email }]
+    });
 
-    //  const documentLocalPath = req.files?.document[0]?.path;
-    // if(!documentLocalPath){
-
-    //     throw new  ApiError(400, "documentlocalpath  file is required ")
-    // }
-
-      const user = await User.create({
-         fullname,
-         username,
-         email: email,
-         password,
-         phone,
-         role,
-      
-         
-     })
- 
-     const createdUser = await  User.findById(user._id).select(
-         "-password -refreshToken"
-     )
- 
-     if(!createdUser){
-         throw new ApiError(500, "user not found")
-     }
- 
-     return resp.status(201).json(
-         new ApiResponse(200,createdUser,"user register successfully")
-     )
- 
- 
- 
- })
-
- const loginUser = asyncHandler(async(req,resp) => {
-    
-    const {email,password} = req.body;
-    // console.log(email);
-    if(!email || !password){
-     throw new ApiError(400,'email and password are required')
+    if (existedUser) {
+        // Was "user with email and password already exist" — copy-paste typo.
+        throw new ApiError(409, "user with email or username already exists");
     }
- 
-    const user = await User.findOne({
-    //  $or:[{email}]
-       email
-    })
- 
-    if(!user){
-     throw new ApiError(404,'user does not exist')
+
+    const user = await User.create({
+        fullname,
+        username,
+        email,
+        password,
+        phone,
+        role,
+    });
+
+    const createdUser = await User.findById(user._id).select("-password -refreshToken");
+
+    if (!createdUser) {
+        throw new ApiError(500, "user not found");
     }
- 
+
+    return resp.status(201).json(
+        new ApiResponse(200, createdUser, "user register successfully")
+    );
+});
+
+const loginUser = asyncHandler(async (req, resp) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, 'email and password are required');
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new ApiError(404, 'user does not exist');
+    }
+
     const isPasswordValid = await user.isPasswordCorrect(password);
-    if(!isPasswordValid){
-     throw new ApiError(401,'invalid password')
+    if (!isPasswordValid) {
+        throw new ApiError(401, 'invalid password');
     }
- 
-    const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user._id);
- 
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
- 
-    const options = {
-     httpOnly: true,
-     secure: true
- 
-    }
- 
-    return resp.status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
-    .json(
-      new ApiResponse(
-         200,
-         {
-             user:loggedInUser,accessToken,refreshToken
-         },
-         "user login Successfully"
-      )
-    )
-    
- })
- const logoutUser = ( async (req,resp) => {
-    await  User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $unset:{
-                refreshToken: 1
-            }
-        },
-        {
-            new:true
-        }
-    )
 
     const options = {
         httpOnly: true,
         secure: true
-    
-       }
+    };
 
-   return resp.status(200)
-    .clearCookie("accessToken",options)
-    .clearCookie("refreshToken",options)
-    .json(new ApiResponse(200,{},"user logged Out"))
-
-})
-
-
-const getUserDetails = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select(
-    "-password -refreshToken"
-  );
-
-  return res.status(200).json(
-    new ApiResponse(200, user, "User details fetched successfully")
-  );
-})
-// const getPatientStats = asyncHandler(async (req, res) => {
-//   const userId = req.user._id;
-
-//   // Count appointments (upcoming + recent)
-//   const appointmentsCount = await Appointment.countDocuments({
-//     patientId: userId,
-//     status: { $in: ['PENDING', 'CONFIRMED', 'COMPLETED'] }
-//   });
-
-//   // Count medical records/prescriptions
-//   const prescriptionsCount = await Prescription.countDocuments({
-//     patientId: userId
-//   });
-
-//   // Count unique doctors
-//   const doctorsCount = await Appointment.distinct('doctorId', {
-//     patientId: userId
-//   }).then(doctors => doctors.length);
-
-//   // Average rating (if you have reviews)
-//   const avgRating = await Appointment.aggregate([
-//     { $match: { patientId: userId } },
-//     {
-//       $group: {
-//         _id: null,
-//         avgRating: { $avg: '$rating' }
-//       }
-//     }
-//   ]).then(result => result[0]?.avgRating || 0);
-
-//   // Recent visits (last 30 days)
-//   const recentVisits = await Appointment.countDocuments({
-//     patientId: userId,
-//     date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-//   });
-
-//   const stats = {
-//     appointmentsCount,
-//     recordsCount: prescriptionsCount,
-//     prescriptionsCount,
-//     doctorsCount,
-//     rating: Math.round(avgRating * 10) / 10,
-//     visitsCount: recentVisits
-//   };
-
-//   return res.status(200).json(
-//     new ApiResponse(200, stats, "Patient stats fetched successfully")
-//   );
-// });
-
-const getPatientStats = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-
-  // ✅ FIX 1: Count ACTUAL Records (not prescriptions)
-  const recordsCount = await MedicalRecord.countDocuments({     // ← Add MedicalRecord model import
-    patientId: userId
-  });
-
-  // Count appointments
-  const appointmentsCount = await Appointment.countDocuments({
-    patientId: userId,
-    status: { $in: ['PENDING', 'CONFIRMED', 'COMPLETED'] }
-  });
-
-  // Count prescriptions
-  const prescriptionsCount = await Prescription.countDocuments({
-    patientId: userId
-  });
-
-  // Count lab reports specifically
-  const labReportsCount = await MedicalRecord.countDocuments({
-    patientId: userId,
-    category: { $in: ['REPORT', 'LAB'] }  // Adjust category names to match your DB
-  });
-
-  // Count unique doctors
-  const doctorsCount = await Appointment.distinct('doctorId', {
-    patientId: userId
-  }).then(doctors => doctors.length);
-
-  // Average rating
-  const avgRating = await Appointment.aggregate([
-    { $match: { patientId: userId } },
-    {
-      $group: {
-        _id: null,
-        avgRating: { $avg: '$rating' }
-      }
-    }
-  ]).then(result => result[0]?.avgRating || 0);
-
-  // Recent visits
-  const recentVisits = await Appointment.countDocuments({
-    patientId: userId,
-    date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-  });
-
-  const stats = {
-    recordsCount,           // ✅ NOW counts actual Record documents
-    labReportsCount,        // ✅ Separate lab count
-    appointmentsCount,
-    prescriptionsCount,
-    doctorsCount,
-    rating: Math.round(avgRating * 10) / 10,
-    visitsCount: recentVisits
-  };
-
-  return res.status(200).json(
-    new ApiResponse(200, stats, "Patient stats fetched successfully")
-  );
+    return resp.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                { user: loggedInUser, accessToken, refreshToken },
+                "user login Successfully"
+            )
+        );
 });
 
-// controllers/patientController.js
-//  const getPatientDoctors = async (req, res) => {
-//     try {
-//         const { page = 1, limit = 10, search = '', specialty = '' } = req.query;
-//         const patientId = req.user.userId; // From your JWT middleware
+const logoutUser = asyncHandler(async (req, resp) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        { $unset: { refreshToken: 1 } },
+        { new: true }
+    );
 
-//         // Find appointments for this patient → get their doctors
-//         const appointments = await Appointment.find({
-//             patientId: patientId, // Patient's ID
-//             $or: [
-//                 { 'doctorId.fullName': { $regex: search, $options: 'i' } },
-//                 { 'doctorId.specialty': { $regex: search, $options: 'i' } }
-//             ]
-//         })
-//         .populate('doctorId', 'fullName specialty consultationFee rating avatar email')
-//         .limit(limit * 1)
-//         .skip((page - 1) * limit)
-//         .sort({ createdAt: -1 });
+    const options = {
+        httpOnly: true,
+        secure: true
+    };
 
-//         // Group by doctor (remove duplicates)
-//         const uniqueDoctors = appointments.reduce((acc, appointment) => {
-//             const doctor = appointment.doctorId;
-//             if (!acc.find(d => d._id.toString() === doctor._id.toString())) {
-//                 acc.push({
-//                     ...doctor.toObject(),
-//                     appointmentCount: appointments.filter(a => 
-//                         a.doctorId._id.toString() === doctor._id.toString()
-//                     ).length,
-//                     lastAppointment: appointment.createdAt
-//                 });
-//             }
-//             return acc;
-//         }, []);
+    return resp.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "user logged Out"));
+});
 
-//         // Filter by specialty if provided
-//         const filteredDoctors = specialty 
-//             ? uniqueDoctors.filter(doctor => 
-//                 doctor.specialty.toLowerCase().includes(specialty.toLowerCase())
-//               )
-//             : uniqueDoctors;
+const getUserDetails = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id).select("-password -refreshToken");
 
-//         const total = filteredDoctors.length;
+    return res.status(200).json(
+        new ApiResponse(200, user, "User details fetched successfully")
+    );
+});
 
-//         res.json({
-//             success: true,
-//             doctors: filteredDoctors,
-//             pagination: {
-//                 current: page,
-//                 pages: Math.ceil(total / limit),
-//                 total
-//             }
-//         });
+const getPatientStats = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
 
-//     } catch (error) {
-//         console.error('Get Patient Doctors Error:', error);
-//         res.status(500).json({ error: error.message });
-//     }
-// };
-const getPatientDoctors = async (req, res) => {
-    try {
-        const patientUserId = req.user.id; // Patient's User ID
-        
-        // 1. Find patient's appointments using USER ID directly
-        const appointments = await Appointment.find({ 
-            patientId: patientUserId  // ← Direct User ID!
-        })
+    const recordsCount = await MedicalRecord.countDocuments({ patientId: userId });
+
+    const appointmentsCount = await Appointment.countDocuments({
+        patientId: userId,
+        status: { $in: ['PENDING', 'CONFIRMED', 'COMPLETED'] }
+    });
+
+    const prescriptionsCount = await Prescription.countDocuments({ patientId: userId });
+
+    const labReportsCount = await MedicalRecord.countDocuments({
+        patientId: userId,
+        category: { $in: ['REPORT'] } // schema enum has no 'LAB' value — REPORT is the closest match
+    });
+
+    const doctorsCount = await Appointment.distinct('doctorId', { patientId: userId })
+        .then(doctors => doctors.length);
+
+    // Removed the $avg: '$rating' aggregation — Appointment has no `rating`
+    // field anywhere in the schema, so this always silently resolved to 0.
+    // No rating feature exists yet; add it back once one does.
+
+    // Was filtering on a top-level `date` field — Appointment stores date
+    // as `slot.date`, so this always matched 0 documents.
+    const recentVisits = await Appointment.countDocuments({
+        patientId: userId,
+        'slot.date': { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+    });
+
+    const stats = {
+        recordsCount,
+        labReportsCount,
+        appointmentsCount,
+        prescriptionsCount,
+        doctorsCount,
+        visitsCount: recentVisits
+    };
+
+    return res.status(200).json(
+        new ApiResponse(200, stats, "Patient stats fetched successfully")
+    );
+});
+
+const getPatientDoctors = asyncHandler(async (req, res) => {
+    const patientId = req.user._id;
+
+    const appointments = await Appointment.find({ patientId })
         .populate({
             path: 'doctorId',
-            match: { role: 'doctor' }, // Only doctors
-            select: 'fullname specialty consultationFee rating avatar'
+            match: { role: 'doctor' },
+            select: 'fullname specialty consultationFee avatar'
         })
         .sort({ createdAt: -1 });
 
-        // 2. Extract unique doctors
-        const doctorMap = new Map();
-        appointments.forEach(appointment => {
-            const doctor = appointment.doctorId;
-            if (doctor) {
-                const key = doctor._id.toString();
-                if (!doctorMap.has(key)) {
-                    doctorMap.set(key, {
-                        id: doctor._id,
-                        fullName: doctor.fullname,
-                        specialty: doctor.specialty || 'General',
-                        consultationFee: doctor.consultationFee || 100,
-                        rating: doctor.rating || 4.5,
-                        avatar: doctor.avatar
-                    });
-                }
+    const doctorMap = new Map();
+    appointments.forEach(appointment => {
+        const doctor = appointment.doctorId;
+        if (doctor) {
+            const key = doctor._id.toString();
+            if (!doctorMap.has(key)) {
+                doctorMap.set(key, {
+                    id: doctor._id,
+                    fullName: doctor.fullname,
+                    specialty: doctor.specialty || 'General',
+                    consultationFee: doctor.consultationFee || 0,
+                    avatar: doctor.avatar
+                });
             }
-        });
-
-        let doctors = Array.from(doctorMap.values());
-
-        // 3. FALLBACK: If no appointments, show top doctors
-        if (doctors.length === 0) {
-            doctors = await User.find({ 
-                role: 'doctor',
-                isActive: true 
-            })
-            .select('fullname specialty consultationFee rating avatar')
-            .sort({ rating: -1 })
-            .limit(10);
-            
-            doctors = doctors.map(doctor => ({
-                id: doctor._id,
-                fullName: doctor.fullname,
-                specialty: doctor.specialty || 'General',
-                consultationFee: doctor.consultationFee || 100,
-                rating: doctor.rating || 4.5,
-                avatar: doctor.avatar
-            }));
         }
+    });
 
-        res.json({
-            success: true,
-            doctors,
-            pagination: {
-                current: 1,
-                pages: 1,
-                total: doctors.length
-            }
-        });
+    let doctors = Array.from(doctorMap.values());
 
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (doctors.length === 0) {
+        const fallbackDoctors = await User.find({ role: 'doctor', isActive: true })
+            .select('fullname specialty consultationFee avatar')
+            .limit(10);
+
+        doctors = fallbackDoctors.map(doctor => ({
+            id: doctor._id,
+            fullName: doctor.fullname,
+            specialty: doctor.specialty || 'General',
+            consultationFee: doctor.consultationFee || 0,
+            avatar: doctor.avatar
+        }));
     }
-};
 
- export {
+    return res.status(200).json(
+        new ApiResponse(200, { doctors, count: doctors.length }, "Doctors fetched successfully")
+    );
+});
+
+export {
     registerUser,
     generateAccessAndRefreshToken,
     loginUser,
@@ -410,41 +228,11 @@ const getPatientDoctors = async (req, res) => {
     getUserDetails,
     getPatientStats,
     getPatientDoctors
-
- }
-
-// 🆘 FIX ALL NULL REFERENCES - Run this script ONCE
-export const fixBrokenAppointments = async (req, res) => {
-  try {
-    // Get all doctors
-    const doctors = await User.find({ role: 'doctor' }).select('_id fullname specialty');
-    
-    // Get broken appointments
-    const brokenAppts = await Appointment.find({ 
-      $or: [{ doctorId: null }, { patientId: null }] 
-    });
-    
-    let fixedCount = 0;
-    
-    for (let appt of brokenAppts) {
-      // Assign first available doctor
-      const randomDoctor = doctors[Math.floor(Math.random() * doctors.length)];
-      
-      await Appointment.findByIdAndUpdate(appt._id, {
-        doctorId: randomDoctor._id,
-        patientId: req.user._id || '69e860850f38a28117d5e0e6' // Default patient
-      });
-      
-      fixedCount++;
-      console.log(`✅ Fixed ${appt._id} → Dr. ${randomDoctor.fullname}`);
-    }
-    
-    res.json({ 
-      success: true, 
-      fixed: fixedCount,
-      message: `${fixedCount} appointments fixed!`
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 };
+
+// fixBrokenAppointments was intentionally removed — it randomly assigned a
+// doctor to any appointment with a null doctorId/patientId, including a
+// hardcoded fallback patient ID. That's a one-time data-repair script, not
+// something that should be a permanently reachable route. Run it as a
+// standalone script against your DB if you still need it once, rather than
+// exporting it as a controller.

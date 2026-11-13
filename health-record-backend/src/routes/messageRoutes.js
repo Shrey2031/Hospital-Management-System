@@ -8,10 +8,11 @@ import {
    getUnreadCount,
    sendMessage,
    updateMessageStatus,
-   deleteMessage
+   deleteMessage,
+   uploadMessageAttachment
 } from "../controllers/message.controller.js";
 import { UserverifyJWT } from "../middleware/auth.middleware.js";
-import {upload} from "../middleware/multer.middleware.js";
+import {upload,singleUpload} from "../middleware/multer.middleware.js";
 
 const router = Router();
 //  router.use('/send', rateLimit({
@@ -28,6 +29,8 @@ router.get('/', UserverifyJWT, getMessages); // ?conversationId=xxx&page=1&limit
 
 // 🔥 SPECIFIC THREAD
 router.get('/:conversationId', UserverifyJWT, getMessageThread);
+
+router.post('/upload-attachment', UserverifyJWT,singleUpload, uploadMessageAttachment);
 
 // 🔥 SEND MESSAGE (with file upload)
 router.post('/', 
