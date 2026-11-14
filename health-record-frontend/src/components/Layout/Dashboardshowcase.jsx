@@ -1,5 +1,5 @@
 import { Wrap, Reveal, Eyebrow } from './Shared';
-import DashboardMock from './DashboardMock';
+import DashboardMock from './Dashboardmock';
 
 const notes = [
   ['Health overview', 'Your score and trend, front and centre.', 'left-[34%] top-[24%]'],
